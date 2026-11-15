@@ -94,6 +94,21 @@ html { scroll-behavior: smooth; }
 .material-icons-outlined { font-family: "Material Icons Outlined"; font-weight: normal; font-style: normal; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; font-feature-settings: "liga"; -webkit-font-smoothing: antialiased; }
 
 /* Public registration */
+.event-attendance { margin-bottom:30px; padding-bottom:28px; border-bottom:1px solid var(--line); }
+.attendance-total { color:var(--muted); line-height:1.6; }
+.attendance-total strong { color:var(--ink); font-size:24px; }
+.attendance-types { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:20px; padding:0; margin:24px 0 32px; list-style:none; }
+.attendance-types li { min-width:0; }
+.attendance-types li > div { display:flex; flex-direction:column; gap:8px; overflow-wrap:anywhere; }
+.attendance-types span { color:var(--muted); font-size:14px; }
+.attendance-types progress { width:100%; height:10px; margin-top:12px; accent-color:#007e8f; }
+.attendees-table { max-width:100%; overflow-x:auto; }
+.attendees-table table { width:100%; border-collapse:collapse; text-align:left; font-size:14px; }
+.attendees-table caption { text-align:left; color:var(--muted); padding-bottom:16px; line-height:1.5; }
+.attendees-table th,.attendees-table td { padding:14px 12px; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; min-width:150px; max-width:320px; }
+.attendees-table thead { background:#f3f7fa; }
+.dashboard :is(button,a,[tabindex]):focus-visible { outline:3px solid #007c91; outline-offset:4px; }
+
 .ticket-link { display:flex; align-items:center; justify-content:center; text-decoration:none; margin:24px 0; box-sizing:border-box; }
 .issued-ticket { width:min(100%,640px); box-sizing:border-box; margin:40px auto; }
 .registration-page .issued-ticket h1 { font-size:clamp(32px,7vw,48px); line-height:1.15; }

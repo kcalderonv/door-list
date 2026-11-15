@@ -8,6 +8,16 @@ La base de datos debe tener aplicadas, en orden, las migraciones de `supabase/mi
 
 Las fechas se introducen en la zona horaria local del navegador y se almacenan como instantes UTC.
 
+### Registros y asistentes en Dashboard
+
+En `/organizador`, cada tarjeta de **Mis eventos** permite abrir **Ver evento**. El detalle muestra los registros sobre el aforo de cada tipo de entrada, el total del evento y los asistentes con nombre, correo, tipo de entrada y fecha de registro en Lima. **Actualizar registros** vuelve a consultar el detalle; los conteos incluyen todos los registros, sin depender del estado de los tickets emitidos. Se conservan la creación y edición de eventos y tipos de entrada.
+
+Requiere aplicar `supabase/migrations/20261117000000_organizer_event_details.sql`, previa confirmación. La RPC `get_organizer_event_details` solo puede ejecutarse con el rol `authenticated` y comprueba que `auth.uid()` sea el dueño del evento. Devuelve `null` para eventos ajenos o inexistentes, incluidos los publicados. No concede acceso directo a `registrations` ni modifica RLS; tampoco devuelve códigos ni hashes de tickets. La consulta devuelve conteos y asistentes en una misma instantánea, sin el límite de filas de una consulta de tabla de PostgREST.
+
+La página y el layout son Server Components. `organizer-dashboard.tsx` y `event-attendance.tsx` usan ejecución en cliente para la sesión de Supabase del navegador, formularios, selección de evento y actualización manual. Al cerrar sesión o cambiar de cuenta se descartan los datos privados y las respuestas pendientes de la cuenta anterior.
+
+`npm test` verifica filtros de propietario, conversión a camelCase y errores con clientes simulados. El script de integración existente también comprueba acceso del dueño, rechazo anónimo y aislamiento frente a otro organizador para eventos publicados y borradores; necesita un proyecto de prueba, todas las migraciones y confirmación previa para ejecutarse.
+
 ## Registro público
 
 La tercera migración, `20261114000000_public_event_registration.sql`, añade las inscripciones y las RPC públicas. Aplícala antes de habilitar la nueva página. La configuración utiliza las mismas variables públicas de Supabase; no requiere una clave de servicio ni dependencias adicionales.

@@ -22,6 +22,7 @@ const anon = createClient(url, key, options);
 const organizer = createClient(url, key, options);
 const fixtureIds = [];
 let userId;
+let otherUserId;
 const tag = randomUUID();
 const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" }).format(new Date());
 const start = new Date(`${today}T00:00:00-05:00`);
@@ -91,6 +92,26 @@ try {
   assert.ifError(count.error);
   assert.equal(count.count, 3);
 
+  // Owner authorization is enforced in PostgreSQL, even for direct RPC calls.
+  const details = await rpc(organizer, "get_organizer_event_details", { p_event_id: event.id });
+  assert.equal(details.eventId, event.id);
+  assert.equal(details.maxCapacity, 3);
+  assert.equal(details.registrations.length, 3);
+  assert.deepEqual(details.ticketTypes.map(type => type.registrationCount).sort(), [1, 2]);
+  assert.ok(details.registrations.some(registration => registration.email === winner));
+  assert.ok(details.registrations.every(registration => registration.eventId === event.id));
+  assert.ok(!JSON.stringify(details).includes(issued.ticket_code), "private ticket secrets are never listed");
+  assert.ok((await anon.rpc("get_organizer_event_details", { p_event_id: event.id })).error);
+  assert.equal(await rpc(organizer, "get_organizer_event_details", { p_event_id: randomUUID() }), null);
+  const otherEmail = `door-list-other-${tag}@example.com`;
+  const otherPassword = `${randomUUID()}Aa1!`;
+  const otherCreated = await admin.auth.admin.createUser({ email: otherEmail, password: otherPassword, email_confirm: true });
+  assert.ifError(otherCreated.error);
+  otherUserId = otherCreated.data.user.id;
+  const otherOrganizer = createClient(url, key, options);
+  assert.ifError((await otherOrganizer.auth.signInWithPassword({ email: otherEmail, password: otherPassword })).error);
+  assert.equal(await rpc(otherOrganizer, "get_organizer_event_details", { p_event_id: event.id }), null, "published events do not expose attendees to another organizer");
+
   const issuedTickets = [issued, ...more.filter(result => result.code === "CREATED")];
   assert.equal(new Set(issuedTickets.map(ticket => ticket.ticket_code)).size, 3);
   const rows = await admin.from("tickets").select("*").in("registration_id", issuedTickets.map(ticket => ticket.registration_id));
@@ -141,6 +162,8 @@ try {
   assert.equal((await organizer.from("ticket_types").delete().eq("id", event.tickets[0])).error?.code, "23503");
   assert.equal((await organizer.from("events").delete().eq("id", event.id)).error?.code, "23503");
   await rpc(organizer, "save_event", update(event.id, "borrador", start.toISOString(), 3));
+  assert.equal((await rpc(organizer, "get_organizer_event_details", { p_event_id: event.id })).registrations.length, 3);
+  assert.equal(await rpc(otherOrganizer, "get_organizer_event_details", { p_event_id: event.id }), null);
   assert.equal(await snapshot(event.id), null);
   assert.equal((await register(event.id, event.tickets[1])).code, "EVENT_UNAVAILABLE");
 
@@ -159,4 +182,5 @@ try {
     if (registrations.error || events?.error) throw new Error("Test cleanup failed; remove this run's fixtures from the test project");
   }
   if (userId) assert.ifError((await admin.auth.admin.deleteUser(userId)).error);
+  if (otherUserId) assert.ifError((await admin.auth.admin.deleteUser(otherUserId)).error);
 }
