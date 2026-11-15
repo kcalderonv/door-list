@@ -15,9 +15,26 @@ let ticketReads = 0;
 let event = { id, title: "Encuentro de prueba", description: "Una tarde para compartir.", date: "2099-11-14T22:00:00Z", venue: "Casa de encuentros", remaining: 1, tickets: [{ id: ticketId, name: "General", remaining: 1 }, { id: "83c90473-5358-49ea-be46-d6fab9ea29d4", name: "Preferente", remaining: 0 }] };
 let reads = 0;
 let requests = 0;
+let listingReads = 0;
+let listingFailure = false;
+let listing = [
+  { id, title: "Encuentro público", description: "Descripción pública.", date: "2099-11-14T22:00:00Z", venue: "Lugar público", status: "publicado" },
+  { id: ticketId, title: "Evento pasado oculto", date: "2000-01-01T00:00:00Z", status: "publicado" },
+  { id: "83c90473-5358-49ea-be46-d6fab9ea29d4", title: "Borrador oculto", date: "2099-11-14T22:00:00Z", status: "borrador" },
+];
 const listen = server => new Promise(resolve => server.listen(0, "127.0.0.1", () => resolve(server.address().port)));
 const stub = createServer(async (request, response) => {
   requests++;
+  const target = new URL(request.url, "http://localhost");
+  if (target.pathname === "/rest/v1/events") {
+    listingReads++;
+    assert.equal(target.searchParams.get("status"), "eq.publicado");
+    assert.equal(target.searchParams.get("order"), "date.asc");
+    assert.equal(target.searchParams.get("select"), "id,title,description,date,venue,status");
+    response.writeHead(listingFailure ? 503 : 200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify(listingFailure ? { message: "Private database error" } : listing));
+    return;
+  }
   assert.ok(["/rest/v1/rpc/get_public_event", "/rest/v1/rpc/get_public_ticket"].includes(request.url));
   const chunks = [];
   for await (const chunk of request) chunks.push(chunk);
@@ -43,7 +60,7 @@ const serverSource = `
   const nativeFetch = globalThis.fetch;
   globalThis.fetch = (input, init) => {
     const target = new URL(typeof input === 'string' || input instanceof URL ? input : input.url);
-    if (['/rest/v1/rpc/get_public_event', '/rest/v1/rpc/get_public_ticket'].includes(target.pathname)) return nativeFetch(new URL(target.pathname, process.env.REGISTRATION_STUB_ORIGIN), init);
+    if (['/rest/v1/events', '/rest/v1/rpc/get_public_event', '/rest/v1/rpc/get_public_ticket'].includes(target.pathname)) return nativeFetch(new URL(target.pathname + target.search, process.env.REGISTRATION_STUB_ORIGIN), init);
     throw new Error('Outbound request blocked by offline rendering test');
   };
   const app = next({ dev: false, hostname: '127.0.0.1', port: Number(process.env.REGISTRATION_TEST_PORT) });
@@ -73,6 +90,20 @@ try {
     })(),
     exited.then(() => { throw new Error("Next.js stopped unexpectedly"); }),
   ]);
+  const home = await fetch(origin);
+  const landing = await home.text();
+  assert.equal(home.status, 200);
+  for (const content of ["Encuentro público", "Descripción pública.", "Lugar público", "Hora de Lima", 'href="/organizador"', 'href="/eventos/' + id + '/registro"']) assert.ok(landing.includes(content), content);
+  for (const content of ["Evento pasado oculto", "Borrador oculto", "Iniciar sesión"]) assert.ok(!landing.includes(content), content);
+  listing = [];
+  assert.ok((await (await fetch(origin)).text()).includes("Pronto habrá nuevos encuentros"));
+  listingFailure = true;
+  const failure = await (await fetch(origin)).text();
+  assert.ok(failure.includes("No pudimos cargar los eventos"));
+  assert.ok(!failure.includes("Private database error"));
+  assert.ok(listingReads >= 3, "listing must be fresh per request");
+  const organizer = await (await fetch(`${origin}/organizador`)).text();
+  assert.ok(organizer.includes("Preparando tu espacio"));
   const page = await fetch(`${origin}/eventos/${id}/registro`);
   const html = await page.text();
   assert.equal(page.status, 200);
@@ -112,7 +143,7 @@ try {
   const missing = await fetch(`${origin}/entradas/${"b2".repeat(32)}`);
   assert.equal(missing.status, 404);
   assert.ok((await missing.text()).includes("Entrada no encontrada"));
-  assert.equal(requests, reads + ticketReads, "only fake read RPCs were contacted");
+  assert.equal(requests, reads + ticketReads + listingReads, "only fake read RPCs were contacted");
   console.log("PASS: registration availability, ticket data/QR, all states, invalid secrets, privacy headers and fresh reads; no database accessed");
 } catch (error) {
   console.error(logs);

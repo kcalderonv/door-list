@@ -1,4 +1,4 @@
-﻿# Door List
+# Door List
 
 ## Panel de organizador
 
@@ -12,7 +12,7 @@ Las fechas se introducen en la zona horaria local del navegador y se almacenan c
 
 La tercera migración, `20261114000000_public_event_registration.sql`, añade las inscripciones y las RPC públicas. Aplícala antes de habilitar la nueva página. La configuración utiliza las mismas variables públicas de Supabase; no requiere una clave de servicio ni dependencias adicionales.
 
-Cada evento publicado tiene una página en `/eventos/<id>/registro`, enlazada desde su tarjeta en el panel. El formulario se puede abrir y enviar sin cuenta. Solo admite eventos cuya fecha en `America/Lima` sea hoy o posterior: los registros cierran a medianoche de Lima después del día del evento, aunque la hora de inicio ya haya pasado. La portada se conserva.
+Cada evento publicado tiene una página en `/eventos/<id>/registro`, enlazada desde su tarjeta en el panel. El formulario se puede abrir y enviar sin cuenta. Solo admite eventos cuya fecha en `America/Lima` sea hoy o posterior: los registros cierran a medianoche de Lima después del día del evento, aunque la hora de inicio ya haya pasado. La portada `/` lista los eventos publicados con registro abierto, ordenados por fecha, y enlaza a sus páginas de registro. Aplica la misma regla de fechas de Lima que usa el panel. El panel permanece en `/organizador`.
 
 Cada envío registra una persona en un tipo de entrada. Nombre y correo son obligatorios; el correo se guarda sin espacios exteriores y en minúsculas, con un único registro por evento. La página muestra entradas disponibles o agotadas. La confirmación comprueba nuevamente publicación, fecha, pertenencia de la entrada y cupos dentro de una única transacción con bloqueos del evento y la entrada. Si se agota un cupo, actualiza las opciones y conserva los datos para elegir otra entrada. Los fallos de conexión permiten reintentar con el mismo correo sin duplicar cupos.
 
