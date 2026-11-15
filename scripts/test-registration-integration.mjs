@@ -8,7 +8,7 @@
  * No confirmation emails are sent. Never prints credentials or attendee data.
  */
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
 if (process.env.ALLOW_REGISTRATION_DB_TESTS !== "1") throw new Error("Database tests require explicit approval and ALLOW_REGISTRATION_DB_TESTS=1");
@@ -77,7 +77,11 @@ try {
   assert.equal(results.filter(result => result.code === "CREATED").length, 1);
   assert.equal(results.filter(result => result.code === "SOLD_OUT").length, 1);
   const winner = racers[results.findIndex(result => result.code === "CREATED")];
-  assert.equal((await register(event.id, event.tickets[0], `  ${winner.toUpperCase()}  `)).code, "ALREADY_REGISTERED");
+  const issued = results.find(result => result.code === "CREATED");
+  assert.match(issued.ticket_code, /^[a-f0-9]{64}$/);
+  const duplicate = await register(event.id, event.tickets[0], `  ${winner.toUpperCase()}  `);
+  assert.equal(duplicate.code, "ALREADY_REGISTERED");
+  assert.equal(duplicate.ticket_code, undefined, "an email is not proof of possession of an entry");
   assert.equal((await register(event.id, event.tickets[1], winner)).code, "ALREADY_REGISTERED");
   const more = await Promise.all(Array.from({ length: 3 }, () => register(event.id, event.tickets[1])));
   assert.equal(more.filter(result => result.code === "CREATED").length, 2);
@@ -87,7 +91,45 @@ try {
   assert.ifError(count.error);
   assert.equal(count.count, 3);
 
+  const issuedTickets = [issued, ...more.filter(result => result.code === "CREATED")];
+  assert.equal(new Set(issuedTickets.map(ticket => ticket.ticket_code)).size, 3);
+  const rows = await admin.from("tickets").select("*").in("registration_id", issuedTickets.map(ticket => ticket.registration_id));
+  assert.ifError(rows.error);
+  assert.equal(rows.data.length, 3);
+  assert.deepEqual(Object.keys(rows.data[0]).sort(), ["code_hash", "created_at", "registration_id", "status"]);
+  const row = rows.data.find(ticket => ticket.registration_id === issued.registration_id);
+  assert.equal(row.code_hash, `\\x${createHash("sha256").update(issued.ticket_code).digest("hex")}`);
+  assert.equal(row.status, "valid");
+  const lookup = code => rpc(anon, "get_public_ticket", { p_code: code });
+  const view = await lookup(issued.ticket_code);
+  assert.equal(view.email, winner);
+  assert.equal(view.status, "valid");
+  assert.deepEqual(Object.keys(view).sort(), ["email", "event", "issuedAt", "name", "status", "ticketName"]);
+  for (const badCode of [null, "", "1", issued.registration_id, winner, issued.ticket_code.slice(0, -1), issued.ticket_code.toUpperCase(), `${issued.ticket_code}\n`, randomBytes(32).toString("hex")]) {
+    assert.equal(await lookup(badCode), null);
+  }
+  // Constraints are checked by the database, independent of application code.
+  assert.equal((await admin.from("tickets").insert({ registration_id: row.registration_id, code_hash: `\\x${randomBytes(32).toString("hex")}` })).error?.code, "23505");
+  assert.equal((await admin.from("tickets").update({ code_hash: row.code_hash }).eq("registration_id", issuedTickets[1].registration_id)).error?.code, "23505");
+  assert.equal((await admin.from("tickets").update({ status: "invalid" }).eq("registration_id", row.registration_id)).error?.code, "23514");
+  for (const status of ["used", "revoked"]) {
+    assert.ifError((await admin.from("tickets").update({ status }).eq("registration_id", row.registration_id)).error);
+    assert.equal((await lookup(issued.ticket_code)).status, status);
+  }
+
+  const sameEmailEvent = await makeEvent("publicado", tomorrow, [2]);
+  const sameEmail = `retry-${tag}@example.com`;
+  const retries = await Promise.all(Array.from({ length: 2 }, () => register(sameEmailEvent.id, sameEmailEvent.tickets[0], sameEmail)));
+  assert.deepEqual(retries.map(result => result.code).sort(), ["ALREADY_REGISTERED", "CREATED"]);
+  const retryCount = await admin.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", sameEmailEvent.id);
+  assert.ifError(retryCount.error);
+  assert.equal(retryCount.count, 1);
+
   for (const client of [anon, organizer]) {
+    assert.ok((await client.from("tickets").select("*")).error, "tickets cannot be enumerated directly");
+    assert.ok((await client.from("tickets").insert({ registration_id: row.registration_id, code_hash: row.code_hash })).error);
+    assert.ok((await client.from("tickets").update({ status: "valid" }).eq("registration_id", row.registration_id)).error);
+    assert.ok((await client.from("tickets").delete().eq("registration_id", row.registration_id)).error);
     assert.ok((await client.from("registrations").select("id")).error, "personal data cannot be read directly");
     assert.ok((await client.from("registrations").insert({ event_id: event.id, ticket_type_id: event.tickets[0], name: "Bypass", email: "bypass@example.com" })).error);
     assert.ok((await client.from("registrations").update({ name: "Bypass" }).eq("event_id", event.id)).error);
@@ -108,7 +150,7 @@ try {
   await rpc(organizer, "save_event", update(future.id, "publicado", tomorrow, 1));
   assert.ifError((await organizer.from("tickets_types").delete().eq("id", future.tickets[0])).error);
   assert.equal((await register(future.id, future.tickets[0])).code, "INVALID_TICKET_TYPE");
-  console.log("PASS: public eligibility, validation, concurrent capacity, duplicates, privacy and organizer protections");
+  console.log("PASS: eligibility, capacity, atomic ticket issuance, unique secrets, duplicates, status, privacy and organizer protections");
 } finally {
   // Restricted to identifiers created by this invocation, including on failure.
   if (fixtureIds.length) {

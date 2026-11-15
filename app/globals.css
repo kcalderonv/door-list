@@ -94,6 +94,18 @@ html { scroll-behavior: smooth; }
 .material-icons-outlined { font-family: "Material Icons Outlined"; font-weight: normal; font-style: normal; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; font-feature-settings: "liga"; -webkit-font-smoothing: antialiased; }
 
 /* Public registration */
+.ticket-link { display:flex; align-items:center; justify-content:center; text-decoration:none; margin:24px 0; box-sizing:border-box; }
+.issued-ticket { width:min(100%,640px); box-sizing:border-box; margin:40px auto; }
+.registration-page .issued-ticket h1 { font-size:clamp(32px,7vw,48px); line-height:1.15; }
+.ticket-status { display:inline-block; padding:8px 14px; border-radius:8px; font-size:16px; font-weight:700; }
+.ticket-status-valid { color:#20553d; background:#e5f2e9; }
+.ticket-status-used { color:#754314; background:#fff4e1; }
+.ticket-status-revoked { color:#a32d22; background:#fdece9; }
+.ticket-qr { margin:28px 0; text-align:center; }
+.ticket-qr svg { display:block; width:min(100%,280px); height:auto; margin:0 auto 16px; }
+.ticket-qr figcaption { font-size:14px; font-weight:700; margin-bottom:8px; }
+.ticket-code { display:block; overflow-wrap:anywhere; font-size:14px; line-height:1.6; user-select:all; }
+.ticket-refresh { display:inline-flex; align-items:center; min-height:44px; color:var(--ink); font-weight:700; text-underline-offset:4px; }
 .registration-page { --ink:#102447; --muted:#50627b; --line:#dce5ef; width:min(100% - 40px,1200px); min-height:100vh; margin:auto; display:flex; flex-direction:column; }
 .registration-header { display:flex; justify-content:space-between; align-items:center; gap:20px; min-height:90px; border-bottom:1px solid var(--line); }
 .registration-header a { color:inherit; text-decoration:none; }.registration-header > span { color:var(--muted); font-size:14px; }
@@ -107,6 +119,16 @@ html { scroll-behavior: smooth; }
 .registration-panel form { margin-top:24px; }.registration-panel fieldset { padding:0; margin:0; border:0; min-width:0; }
 .registration-panel label { display:block; margin:20px 0 8px; font-size:14px; font-weight:700; }.registration-panel label:first-child { margin-top:0; }
 .registration-panel :is(input,select) { display:block; width:100%; min-height:48px; padding:12px; font:inherit; color:var(--ink); background:white; border:1px solid #bacbd9; border-radius:8px; }
+.registration-tickets legend { padding:0; margin-bottom:8px; font-size:14px; font-weight:700; }
+.registration-ticket-options { display:grid; gap:10px; }
+.registration-panel .registration-ticket-option { display:flex; align-items:center; gap:12px; min-height:64px; padding:12px; margin:0; border:1px solid #bacbd9; border-radius:8px; cursor:pointer; }
+.registration-ticket-option > span { min-width:0; overflow-wrap:anywhere; }
+.registration-panel .registration-ticket-option input { flex:0 0 20px; width:20px; height:20px; min-height:20px; padding:0; margin:0; accent-color:#132f59; }
+.registration-ticket-name { display:block; }
+.registration-ticket-availability { display:block; margin-top:4px; color:var(--muted); font-size:14px; font-weight:400; line-height:1.5; }
+.registration-ticket-option:has(input:checked) { border-color:#132f59; background:#f0f5fb; }
+.registration-tickets[aria-invalid=true] .registration-ticket-option { border-color:#ad392a; }
+.registration-ticket-option:has(input:disabled) { background:#f3f6fa; cursor:default; }
 .registration-panel [aria-invalid=true] { border-color:#ad392a; }.registration-field-error { color:#a32d22; font-size:13px; line-height:1.5; margin:8px 0 0; }
 .registration-submit { min-height:48px; width:100%; padding:13px 20px; border:0; border-radius:9px; background:#132f59; color:white; font:700 16px var(--font-sans),Arial,sans-serif; cursor:pointer; }
 .registration-submit:hover { background:#204b80; }.registration-submit:disabled,.registration-panel fieldset:disabled .registration-submit { opacity:.6; cursor:default; }.registration-panel fieldset:disabled :is(input,select) { background:#f3f6fa; }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient, type Session } from "@supabase/supabase-js";
+import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { hasPublicRegistration } from "@/app/lib/registration";
@@ -13,6 +13,9 @@ const supabase = url && key ? createClient(url, key) : null;
 const blank = { title: "", description: "", date: "", venue: "", status: "borrador", max_capacity: 1 };
 function Icon({ name }: { name: string }) { return <span className="material-icons-outlined app-icon" aria-hidden="true">{name}</span>; }
 function localDate(value: string) { const d = new Date(value); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
+function loadOrganizerData(client: SupabaseClient, userId: string) {
+  return Promise.all([client.from("events").select("*").eq("organizer_id", userId).order("date"), client.from("tickets_types").select("*")]);
+}
 
 export default function Organizer() {
   const [session, setSession] = useState<Session | null>(null);
@@ -38,11 +41,20 @@ export default function Organizer() {
   }, []);
   async function refresh() {
     if (!supabase || !session) return;
-    const [e, t] = await Promise.all([supabase.from("events").select("*").eq("organizer_id", session.user.id).order("date"), supabase.from("tickets_types").select("*")]);
+    const [e, t] = await loadOrganizerData(supabase, session.user.id);
     if (e.error || t.error) { setMessage((e.error || t.error)?.message || "Error al cargar los datos"); return; }
     setEvents(e.data || []); setTickets(t.data || []);
   }
-  useEffect(() => { if (session) { void refresh(); } }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!session || !supabase) return;
+    let cancelled = false;
+    void loadOrganizerData(supabase, session.user.id).then(([e, t]) => {
+      if (cancelled) return;
+      if (e.error || t.error) { setMessage((e.error || t.error)?.message || "Error al cargar los datos"); return; }
+      setEvents(e.data || []); setTickets(t.data || []);
+    });
+    return () => { cancelled = true; };
+  }, [session]);
   async function login(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); if (!supabase) return;
     setBusy(true); setMessage(""); const data = new FormData(e.currentTarget);

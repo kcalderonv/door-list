@@ -22,7 +22,37 @@ Los datos de asistentes no se pueden consultar o modificar directamente con las 
 
 Con Node.js 22.18 o posterior, ejecuta `npm test` para validar campos y fechas de Lima; `npm run lint`, `npx --no-install tsc --noEmit` y `npm run build` verifican el código. Estos comandos no deben consultar la base de datos; la ruta pública espera una solicitud antes de cargar datos. La compilación requiere acceso a Google Fonts.
 
-El script `scripts/test-registration-integration.mjs` verifica en un proyecto Supabase de prueba la concurrencia por el último cupo, duplicados, filtros públicos, permisos y protecciones administrativas. Su ejecución requiere confirmación previa porque consulta y modifica la base de datos. Consulta su cabecera para las variables necesarias; crea sus propios eventos, elimina solo sus propios datos al terminar y no instala dependencias. No uses un proyecto de producción.
+Después de compilar, `npm run test:http` comprueba el HTML de la página anónima, entradas agotadas, enlaces inválidos y eventos cerrados. Levanta un servidor temporal de producción con un servicio simulado en memoria y bloquea las demás solicitudes salientes; no accede a la base de datos ni detiene el servidor de desarrollo existente.
+
+El script `scripts/test-registration-integration.mjs` verifica en un proyecto Supabase de prueba la concurrencia por el último cupo, duplicados, filtros públicos, permisos y protecciones administrativas. Su ejecución requiere confirmación previa porque consulta y modifica la base de datos. Consulta su cabecera para las variables necesarias; crea sus propios eventos y una cuenta temporal, elimina solo sus propios datos al terminar y no instala dependencias. No uses un proyecto de producción.
+
+## Emisión de entradas
+
+La migración `20261115000000_issue_tickets.sql` crea `tickets` y amplía `create_registration`: cada registro nuevo y su entrada se guardan en la misma transacción. El código se genera en PostgreSQL con 32 bytes criptográficamente aleatorios de `pgcrypto`, instalado en el esquema `extensions` de Supabase. Solo se almacena su hash SHA-256, único; la clave primaria `registration_id` impide emitir dos entradas para la misma inscripción. Un error de emisión revierte también el registro. Los registros anteriores a esta migración no se modifican ni reciben códigos retroactivamente.
+
+La confirmación muestra **Ver mi entrada y QR**, con un enlace secreto `/entradas/<código>`. La página muestra nombre, correo, tipo de entrada, evento, QR y el estado actual (`valid`, `used`, `revoked`). El QR contiene el código, se genera localmente con `qrcode` y no se envía a servicios externos. Actualizar la página vuelve a consultar el estado; abrirla o escanear el QR no consume la entrada. Los cambios de estado quedan reservados a operaciones administrativas de confianza; no se añade una interfaz de control de ingreso.
+
+La RPC `get_public_ticket` solo acepta el código hexadecimal completo de 64 caracteres y compara su hash por igualdad. Códigos malformados o inexistentes devuelven `null`; no hay consultas por correo, ID de registro ni prefijos. RLS y los permisos impiden listar o modificar tickets con roles públicos o de organizador. El enlace permite acceder a los datos a quien lo posea: debe guardarse como una credencial privada. Las respuestas usan `no-store`, `no-referrer` y `noindex`, y las entradas se excluyen de `robots.txt` y del sitemap. El alojamiento también debe omitir o redactar estos códigos en sus registros de acceso y herramientas de analítica.
+
+Los reintentos, incluso simultáneos, conservan la unicidad por evento y correo. Una respuesta `ALREADY_REGISTERED` nunca devuelve el código existente: conocer el correo no autoriza a ver la entrada. Si se pierde la respuesta original tras confirmar, no se emite una segunda entrada; la recuperación del enlace requiere un futuro flujo que verifique la identidad del asistente.
+
+`qrcode` y `@types/qrcode` están declarados en `package.json` y fijados en `package-lock.json`. Antes de habilitar la emisión, aplica la cuarta migración con la confirmación previa exigida por `AGENTS.md`. Las pruebas locales de `npm test` simulan el servicio y no acceden a la base de datos. El script de integración también verifica códigos únicos, estados, reintentos simultáneos y restricciones de consulta/escritura; requiere autorización y un proyecto Supabase de pruebas, y no se ejecuta durante la compilación.
+
+Referencias: [aleatoriedad de pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) y [generador QR local](https://github.com/soldair/node-qrcode).
+
+## Correo de confirmación
+
+Al confirmar un registro nuevo, la aplicación envía un correo con el nombre del evento, la fecha y hora de Lima, el lugar, el tipo de entrada y el QR incluido como imagen PNG visible en el mensaje. Estos datos se consultan desde la entrada confirmada; no dependen de valores enviados por el navegador. No hace falta abrir ningún enlace para verlos; el correo también incluye el enlace privado para consultar el estado actualizado. Solo se envía tras recibir la confirmación de emisión; un registro duplicado no reenvía correos ni revela códigos anteriores. Si SMTP rechaza el mensaje o la configuración está incompleta, el registro sigue confirmado y el usuario conserva su enlace en pantalla. El envío es inmediato, sin cola ni reintentos automáticos; la aceptación por SMTP no garantiza la entrega final al buzón.
+
+Las variables de correo están en `.env.example` y se pueden completar en `.env.local`. No llevan el prefijo `NEXT_PUBLIC_`, por lo que las credenciales se utilizan solo en el servidor. El envío permanece desactivado con `MAIL_ENABLED=false` hasta que completes la configuración.
+
+Para desarrollo, configura `MAILTRAP_SMTP_USER` y `MAILTRAP_SMTP_PASSWORD` desde **Mailtrap → Email Sandbox → Integration → SMTP**. El host predeterminado es `sandbox.smtp.mailtrap.io`, puerto `2525`, con STARTTLS. Completa también `MAIL_FROM_ADDRESS` y `MAIL_FROM_NAME`, conserva `APP_URL=http://localhost:3000` y cambia `MAIL_ENABLED=true`. Mailtrap Sandbox captura los mensajes para inspección; no los entrega al destinatario real. [Documentación de Mailtrap](https://docs.mailtrap.io/email-sandbox/setup/sandbox-smtp-integration).
+
+En producción, el transporte predeterminado usa `SMTP_HOST=localhost` y `SMTP_PORT=25`, sin autenticación ni TLS, para un relay local que debes tener instalado y configurado. Si el relay está en otra máquina o contenedor, usa su dirección real: `localhost` siempre apunta al entorno donde corre Next.js. Puedes configurar `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_SECURE` (TLS desde la conexión, normalmente puerto 465) y `SMTP_REQUIRE_TLS` (STARTTLS obligatorio). La verificación de certificados se conserva. [Opciones SMTP de Nodemailer](https://nodemailer.com/smtp).
+
+`MAIL_TRANSPORT` vacío selecciona Mailtrap con `next dev` y SMTP con `next start`. Puedes fijarlo explícitamente a `mailtrap` o `smtp`, por ejemplo para usar el Sandbox en una instalación de pruebas con compilación de producción. `APP_URL` debe ser el origen público HTTPS en producción, por ejemplo `https://eventos.tudominio.com`; se usa para construir el enlace de la entrada y es independiente del host SMTP. Reinicia el servidor después de editar `.env.local`.
+
+Las pruebas de `npm test` simulan SMTP y comprueban ambos transportes, validación de configuración, contenido HTML escapado, QR, fallos y protección de la confirmación. No envían correos reales ni acceden a la base de datos.
 
 ## SEO y despliegue
 

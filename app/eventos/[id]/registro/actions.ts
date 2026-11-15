@@ -1,6 +1,8 @@
 "use server";
 
 import { isUuid, validateRegistration, type RegistrationState } from "@/app/lib/registration";
+import { isTicketCode } from "@/app/lib/tickets";
+import { sendRegistrationEmail } from "@/app/lib/registration-email";
 import { getPublicEvent, publicClient } from "./data";
 
 export async function registerForEvent(
@@ -25,8 +27,16 @@ export async function registerForEvent(
     });
     if (error) throw new Error("Registration request failed");
 
-    if (data?.code === "CREATED" && typeof data.registration_id === "string" && typeof data.ticket_name === "string") {
-      return { status: "success", message: "Registro confirmado", fieldErrors: {}, ticketName: data.ticket_name };
+    if (data?.code === "CREATED" && isUuid(data.registration_id ?? "") && typeof data.ticket_name === "string" && isTicketCode(data.ticket_code)) {
+      // Issuance has already committed. Email delivery must never turn a valid
+      // registration into an error or prompt another registration attempt.
+      let emailDelivery: "sent" | "failed" | "disabled" = "failed";
+      try {
+        emailDelivery = await sendRegistrationEmail(data.ticket_code);
+      } catch {
+        // Preserve confirmation even if the mail adapter unexpectedly throws.
+      }
+      return { status: "success", message: "Registro confirmado", fieldErrors: {}, ticketName: data.ticket_name, ticketCode: data.ticket_code, emailDelivery };
     }
     if (data?.code === "EVENT_UNAVAILABLE") {
       return { status: "unavailable", message: "Este evento ya no admite registros. Puede haber finalizado o dejado de estar publicado.", fieldErrors: {}, event: null };

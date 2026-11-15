@@ -21,6 +21,8 @@ export type RegistrationState = {
   // Undefined preserves the last snapshot; null means registration has closed.
   event?: PublicEvent | null;
   ticketName?: string;
+  ticketCode?: string;
+  emailDelivery?: "sent" | "failed" | "disabled";
 };
 
 export const initialRegistrationState: RegistrationState = { status: "idle", message: "", fieldErrors: {} };

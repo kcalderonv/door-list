@@ -4,14 +4,27 @@ import { after, beforeEach, test } from "node:test";
 
 // Exercise the real Server Action while replacing only its database boundary.
 const database = { result: null, event: null, failure: false, calls: [] };
+const mail = { calls: [], result: "sent", failure: false };
 globalThis.__registrationTestDatabase = database;
+globalThis.__registrationTestMail = mail;
 const hooks = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "@/app/lib/registration") return { url: new URL("../app/lib/registration.ts", import.meta.url).href, shortCircuit: true };
+    if (specifier === "@/app/lib/tickets") return { url: new URL("../app/lib/tickets.ts", import.meta.url).href, shortCircuit: true };
+    if (specifier === "@/app/lib/registration-email") return { url: "test:registration-mail", shortCircuit: true };
     if (specifier === "./data" && context.parentURL?.endsWith("/actions.ts")) return { url: "test:registration-data", shortCircuit: true };
     return next(specifier, context);
   },
   load(url, context, next) {
+    if (url === "test:registration-mail") return {
+      format: "module", shortCircuit: true,
+      source: `export async function sendRegistrationEmail(ticket) {
+        const mail = globalThis.__registrationTestMail;
+        mail.calls.push(ticket);
+        if (mail.failure) throw new Error("SMTP unavailable");
+        return mail.result;
+      }`,
+    };
     if (url === "test:registration-data") return {
       format: "module", shortCircuit: true,
       source: `
@@ -33,13 +46,14 @@ const { registerForEvent } = await import("../app/eventos/[id]/registro/actions.
 const eventId = "8f9a1248-8cf1-4739-9d8a-e0d6a7847353";
 const ticketId = "976722c2-e5d2-4a2a-8207-7c571b9fab3c";
 const initial = { status: "idle", message: "", fieldErrors: {} };
+const issuedCode = "a1".repeat(32);
 function form() {
   const data = new FormData();
   data.set("name", "  Ana  "); data.set("email", " ANA@Example.com "); data.set("ticketTypeId", ticketId);
   return data;
 }
-beforeEach(() => { database.calls = []; database.result = null; database.event = null; database.failure = false; });
-after(() => { hooks.deregister(); delete globalThis.__registrationTestDatabase; });
+beforeEach(() => { database.calls = []; database.result = null; database.event = null; database.failure = false; mail.calls = []; mail.result = "sent"; mail.failure = false; });
+after(() => { hooks.deregister(); delete globalThis.__registrationTestDatabase; delete globalThis.__registrationTestMail; });
 
 test("invalid fields never reach the database", async () => {
   const result = await registerForEvent(eventId, initial, new FormData());
@@ -53,17 +67,49 @@ test("invalid event IDs are unavailable without a database request", async () =>
 });
 
 test("success requires a confirmed insert and submits normalized values", async () => {
-  database.result = { data: { code: "CREATED", registration_id: eventId, ticket_name: "General" }, error: null };
+  database.result = { data: { code: "CREATED", registration_id: eventId, ticket_name: "General", ticket_code: issuedCode }, error: null };
   const result = await registerForEvent(eventId, initial, form());
   assert.equal(result.status, "success");
   assert.equal(result.ticketName, "General");
+  assert.equal(result.ticketCode, issuedCode);
+  assert.equal(result.emailDelivery, "sent");
+  assert.deepEqual(mail.calls, [issuedCode]);
   assert.deepEqual(database.calls, [{ name: "create_registration", args: { p_event_id: eventId, p_ticket_type_id: ticketId, p_name: "Ana", p_email: "ana@example.com" } }]);
 });
 
 test("a duplicate consumes no further action request", async () => {
-  database.result = { data: { code: "ALREADY_REGISTERED" }, error: null };
-  assert.equal((await registerForEvent(eventId, initial, form())).status, "duplicate");
+  database.result = { data: { code: "ALREADY_REGISTERED", ticket_code: issuedCode }, error: null };
+  const result = await registerForEvent(eventId, initial, form());
+  assert.equal(result.status, "duplicate");
+  assert.equal(result.ticketCode, undefined, "knowing an email never reveals its ticket secret");
   assert.equal(database.calls.length, 1);
+  assert.equal(mail.calls.length, 0, "duplicates must never trigger another email");
+});
+
+test("a CREATED response without a valid issued secret never confirms an entry", async () => {
+  for (const ticket_code of [undefined, null, eventId, "a".repeat(63), "a".repeat(65), "g".repeat(64), "../organizador"]) {
+    database.result = { data: { code: "CREATED", registration_id: eventId, ticket_name: "General", ticket_code }, error: null };
+    const result = await registerForEvent(eventId, initial, form());
+    assert.equal(result.status, "error");
+    assert.equal(result.ticketCode, undefined);
+    assert.equal(mail.calls.length, 0);
+  }
+});
+
+test("email failure or disabled email never removes a committed ticket confirmation", async () => {
+  database.result = { data: { code: "CREATED", registration_id: eventId, ticket_name: "General", ticket_code: issuedCode }, error: null };
+  for (const delivery of ["failed", "disabled"]) {
+    mail.result = delivery;
+    const result = await registerForEvent(eventId, initial, form());
+    assert.equal(result.status, "success");
+    assert.equal(result.ticketCode, issuedCode);
+    assert.equal(result.emailDelivery, delivery);
+  }
+  mail.failure = true;
+  const result = await registerForEvent(eventId, initial, form());
+  assert.equal(result.status, "success");
+  assert.equal(result.ticketCode, issuedCode);
+  assert.equal(result.emailDelivery, "failed");
 });
 
 test("sold-out and removed tickets refresh the event's options", async () => {
