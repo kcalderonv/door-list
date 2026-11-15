@@ -1,4 +1,7 @@
 export const EVENT_TIME_ZONE = "America/Lima";
+export function formatRegistrationDay(value: string): string {
+  return new Intl.DateTimeFormat("es-PE", { timeZone: EVENT_TIME_ZONE, dateStyle: "medium" }).format(new Date(`${value}T12:00:00-05:00`));
+}
 export function limaDate(value: string | Date): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: EVENT_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
 }
