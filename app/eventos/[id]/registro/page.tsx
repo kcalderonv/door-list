@@ -21,7 +21,7 @@ export default async function RegistrationPage({ params }: { params: Promise<{ i
       <h1 id="event-title">{event.title}</h1>
       <p className="registration-description">{event.description}</p>
       <dl className="registration-facts">
-        <div><dt>Fecha y hora</dt><dd>{formatEventDate(event.date)}<small>Hora de Lima</small></dd></div>
+        <div><dt>Fecha y hora</dt><dd><time dateTime={event.date}>{formatEventDate(event.date)}</time><small>Hora de Lima</small></dd></div>
         <div><dt>Lugar</dt><dd>{event.venue}</dd></div>
       </dl>
       <p className="registration-note">Puedes registrarte durante todo el día del evento, mientras haya cupo.</p>

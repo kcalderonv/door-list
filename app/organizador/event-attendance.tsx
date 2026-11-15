@@ -29,18 +29,20 @@ export default function EventAttendance({ eventId }: { eventId: string }) {
   }, [eventId, revision]);
 
   function refresh() {
-    setDetails(null);
     setError("");
     setLoading(true);
     setRevision(value => value + 1);
   }
 
-  return <section className="event-attendance" aria-labelledby="attendance-title" aria-busy={loading}>
+  return <section className="event-attendance" aria-labelledby="attendance-title">
     <div className="section-heading">
       <h3 id="attendance-title">Registros y aforo</h3>
       <button className="secondary" disabled={loading} onClick={refresh}>Actualizar registros</button>
     </div>
-    {loading ? <p role="status">Cargando registros…</p> : error ? <p className="notice" role="alert">{error}</p> : details && <>
+    {loading && <p role="status">Cargando registros…</p>}
+    {error && <p className="notice error-notice" role="alert">{error}</p>}
+    <div aria-busy={loading}>
+    {details && <>
       <p className="attendance-total"><strong>{details.registrations.length} / {details.maxCapacity}</strong> personas registradas en el evento</p>
       {details.ticketTypes.length === 0 ? <p className="ticket-empty">Este evento aún no tiene tipos de entrada.</p> : <ul className="attendance-types">
         {details.ticketTypes.map(ticketType => <li key={ticketType.id}>
@@ -61,5 +63,6 @@ export default function EventAttendance({ eventId }: { eventId: string }) {
         </table>
       </div>}
     </>}
+    </div>
   </section>;
 }

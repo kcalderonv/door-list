@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { type Session } from "@supabase/supabase-js";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import EventAttendance from "./event-attendance";
+import CardSkeleton from "@/components/card-skeleton";
 import { providerMessage } from "@/lib/provider-errors";
 import { hasPublicRegistration } from "@/lib/registration";
 
@@ -16,6 +17,9 @@ export default function Organizer() {
   const activeUserId = useRef<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState("");
+  const [eventsRevision, setEventsRevision] = useState(0);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [events, setEvents] = useState<Event[]>([]);
@@ -36,6 +40,7 @@ export default function Organizer() {
       const nextUserId = next?.user.id ?? null;
       if (activeUserId.current !== nextUserId) {
         setEvents([]); setTicketTypes([]); setSelected(null);
+        setEventsLoading(true); setEventsError("");
         setFormOpen(false); setEditing(null); setForm(blank); setMessage("");
       }
       activeUserId.current = nextUserId;
@@ -49,19 +54,24 @@ export default function Organizer() {
     if (activeUserId.current !== session.user.id) return;
     if (e.error || t.error) { setMessage(providerMessage(e.error || t.error)); return; }
     setEvents(e.data || []); setTicketTypes(t.data || []); setDetailsRevision(value => value + 1);
+    setEventsError(""); setEventsLoading(false);
   }
   useEffect(() => {
     if (!session || !supabase) return;
     let cancelled = false;
     void loadOrganizerData(supabase, session.user.id).then(([e, t]) => {
       if (cancelled || activeUserId.current !== session.user.id) return;
-      if (e.error || t.error) { setMessage(providerMessage(e.error || t.error)); return; }
+      if (e.error || t.error) { setEventsError(providerMessage(e.error || t.error)); setEventsLoading(false); return; }
       setEvents(e.data || []); setTicketTypes(t.data || []);
+      setEventsError(""); setEventsLoading(false);
     }).catch(() => {
-      if (!cancelled && activeUserId.current === session.user.id) setMessage("No se pudieron cargar tus eventos. Inténtalo nuevamente.");
+      if (!cancelled && activeUserId.current === session.user.id) {
+        setEventsError("No se pudieron cargar tus eventos. Inténtalo nuevamente.");
+        setEventsLoading(false);
+      }
     });
     return () => { cancelled = true; };
-  }, [session]);
+  }, [session, eventsRevision]);
   async function login(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); if (!supabase) return;
     setBusy(true); setMessage(""); const data = new FormData(e.currentTarget);
@@ -101,13 +111,15 @@ export default function Organizer() {
       <Link className="brand" href="/" aria-label="Door List, ir al inicio">door list<span className="brand-dot">.</span></Link>
       {session ? <button className="header-action" onClick={() => void supabase?.auth.signOut()}>Cerrar sesión</button> : <Link className="back-link" href="/">Volver al inicio</Link>}
     </header>
-    {!supabase ? <p role="alert">Configura NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY para conectar Supabase.</p> : loading ? <p className="loading">Preparando tu espacio…</p> : !session ?
+    {!supabase ? <p className="notice error-notice" role="alert">El panel no está disponible en este momento. Inténtalo nuevamente más tarde.</p> : loading ? <p className="loading" role="status">Preparando tu espacio…</p> : !session ?
       <div className="login-layout"><section className="login-intro"><span className="section-tag">Para organizadores</span><h1>Grandes eventos empiezan aquí<span className="brand-dot">.</span></h1><p>Un lugar para organizar cada detalle y dar la bienvenida a tus invitados.</p><div className="login-art" aria-hidden="true"><span /><span /><span /></div></section>
       <form className="panel login" onSubmit={login}><div className="panel-heading"><div><p className="eyebrow">Tu espacio</p><h2>Qué bueno verte</h2><p>Inicia sesión para gestionar tus eventos.</p></div></div><label>Correo electrónico<input name="email" type="email" required autoComplete="email" placeholder="tu@correo.com" /></label><label>Contraseña<input name="password" type="password" required autoComplete="current-password" placeholder="Tu contraseña" /></label>{message && <p className="notice" role="status">{message}</p>}<button className="primary wide" disabled={busy}>{busy ? "Ingresando…" : "Iniciar sesión"}</button><p className="login-note">Usa la cuenta de organizador que ya tienes en Door List.</p></form></div> : <>
       <section className="dashboard-intro"><div><p className="eyebrow">Panel de organizador</p><h1>Hagamos que suceda<span className="brand-dot">.</span></h1><p>Todo lo que necesitas para tus próximos encuentros.</p></div><button className="primary create-button" onClick={() => showForm()}><Icon name="add" /> Crear evento</button></section>
       {message && <p className="notice" role="status">{message}</p>}
       <div className="workspace"><section className="events-section" aria-labelledby="events-title"><div className="section-heading"><div><p className="eyebrow">Tu agenda</p><h2 id="events-title">Mis eventos <span className="count">{events.length}</span></h2></div><span className="section-hint">Todos tus encuentros, en un lugar</span></div>
-      {events.length === 0 ? <div className="empty-state"><div className="empty-icon"><Icon name="event_available" /></div><h3>Tu próximo evento empieza aquí</h3><p>Crea un evento para empezar a organizar sus entradas y aforo.</p><button className="secondary" onClick={() => showForm()}>Crear mi primer evento</button></div> : <div className="event-list">{events.map(item => <article className={"event-card" + (selected === item.id ? " selected" : "")} key={item.id}><div className="event-card-top"><div className="date-tile"><strong>{formatOrganizerDate(item.date, "day")}</strong><span>{formatOrganizerDate(item.date, "month")}</span></div><div className="event-card-title"><span className={"status " + (item.status === "publicado" ? "published" : "draft")}>{item.status === "publicado" ? "Publicado" : "Borrador"}</span><h3>{item.title}</h3><p>{item.venue}</p></div></div><div className="event-meta"><span>{formatOrganizerDate(item.date)}</span><span>Aforo: {item.maxCapacity}</span></div><div className="actions">{hasPublicRegistration(item) && <Link className="public-registration-link" href={`/eventos/${item.id}/registro`} prefetch={false}><Icon name="open_in_new" />Ver registro público</Link>}<button className="secondary" aria-pressed={selected === item.id} onClick={() => showTickets(item.id)}><Icon name="confirmation_number" />{selected === item.id ? "Viendo evento" : "Ver evento"}</button><button className="text-button" onClick={() => showForm(item)}><Icon name="edit" />Editar</button><button className="danger" disabled={busy} onClick={() => void remove("events", item.id)}><Icon name="delete_outline" />Eliminar</button></div></article>)}</div>}</section>
+      {eventsLoading && <p role="status">Cargando eventos…</p>}
+      {eventsError && <div className="notice error-notice" role="alert"><p>{eventsError}</p><button className="secondary" disabled={eventsLoading} onClick={() => { setEventsLoading(true); setEventsError(""); setEventsRevision(value => value + 1); }}>Volver a intentar</button></div>}
+      {eventsLoading && events.length === 0 ? <div className="event-list" aria-busy="true">{[0, 1, 2].map(index => <CardSkeleton key={index} />)}</div> : eventsError && events.length === 0 ? null : events.length === 0 ? <div className="empty-state"><div className="empty-icon"><Icon name="event_available" /></div><h3>Aún no tienes eventos</h3><p>Crea tu primer evento para empezar a recibir registros.</p><button className="primary" onClick={() => showForm()}>Crear evento</button></div> : <div className="event-list" aria-busy={eventsLoading}>{events.map(item => <article aria-labelledby={`event-${item.id}`} className={"event-card" + (selected === item.id ? " selected" : "")} key={item.id}><div className="event-card-top"><div className="date-tile" aria-hidden="true"><strong>{formatOrganizerDate(item.date, "day")}</strong><span>{formatOrganizerDate(item.date, "month")}</span></div><div className="event-card-title"><span className={"status " + (item.status === "publicado" ? "published" : "draft")}>{item.status === "publicado" ? "Publicado" : "Borrador"}</span><h3 id={`event-${item.id}`}>{item.title}</h3><p>{item.venue}</p></div></div><div className="event-meta"><time dateTime={item.date}>{formatOrganizerDate(item.date)}</time><span>Aforo: {item.maxCapacity}</span></div><div className="actions"><button className="secondary" aria-pressed={selected === item.id} onClick={() => showTickets(item.id)}><Icon name="confirmation_number" />{selected === item.id ? "Viendo evento" : "Ver evento"}</button>{hasPublicRegistration(item) && <Link className="public-registration-link" href={`/eventos/${item.id}/registro`} prefetch={false}><Icon name="open_in_new" />Ver registro público</Link>}<button className="text-button" onClick={() => showForm(item)}><Icon name="edit" />Editar</button><button className="danger" disabled={busy} onClick={() => void remove("events", item.id)}><Icon name="delete_outline" />Eliminar</button></div></article>)}</div>}</section>
       {formOpen && <section className="panel event-form" id="event-form" aria-labelledby="form-title"><div className="panel-heading"><div><p className="eyebrow">Los detalles importan</p><h2 id="form-title">{editing ? "Editar evento" : "Crear evento"}</h2><p>Cuéntanos sobre tu próximo encuentro.</p></div><button className="close-button" type="button" aria-label="Cerrar formulario" onClick={() => {setFormOpen(false);setEditing(null);setForm(blank);}}><Icon name="close" /></button></div><form onSubmit={saveEvent}>
         <label>Nombre del evento<input required value={form.title} onChange={e => setForm({...form,title:e.target.value})} placeholder="Ej. Noche de verano" /></label>
         <label>Descripción<textarea required value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="¿Qué hace especial a tu evento?" /></label>

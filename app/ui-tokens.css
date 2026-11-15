@@ -1,0 +1,69 @@
+/* Canonical Door List UI tokens. Imported by app/layout.tsx and referenced by the door-list-ui skill. */
+:root {
+  color-scheme: light;
+
+  --color-canvas: #f3f6fa;
+  --color-surface: #ffffff;
+  --color-text: #102447;
+  --color-text-muted: #50627b;
+  --color-border: #dce5ef;
+  /* 3.40:1 against surface; keeps form controls distinguishable. */
+  --color-control-border: #7b8da3;
+  --color-primary: #132f59;
+  --color-primary-hover: #204b80;
+  --color-on-primary: #ffffff;
+  --color-secondary: #e4eef9;
+  --color-accent: #ed8b42;
+  --color-focus: #007c91;
+  --color-info-surface: #e4f2f7;
+  --color-info-border: #c8e3eb;
+  --color-info-text: #14525f;
+  --color-success-surface: #e5f2e9;
+  --color-success-text: #20553d;
+  --color-warning-surface: #fff4e1;
+  --color-warning-text: #754314;
+  --color-error-surface: #fdece9;
+  --color-error-text: #a32d22;
+  --color-skeleton: #e4eef9;
+
+  /* --font-sans and --font-display are provided by the root layout. */
+  --font-body: var(--font-sans), Arial, sans-serif;
+  --font-heading: var(--font-display), Georgia, serif;
+  --text-caption: 0.8125rem;
+  --text-small: 0.875rem;
+  --text-body: 1rem;
+  --text-card-title: 1.25rem;
+  --text-section-title: 2rem;
+  --text-page-title: clamp(2.75rem, 8vw, 5.375rem);
+  --leading-body: 1.5;
+  --leading-heading: 1.15;
+  --leading-page-title: 1.03;
+  --tracking-heading: -0.035em;
+  --weight-regular: 400;
+  --weight-strong: 700;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --radius-control: 0.5rem;
+  --radius-card: 1rem;
+  --radius-pill: 999px;
+  --border-width: 1px;
+  --focus-width: 3px;
+  --focus-offset: 4px;
+  --control-min-height: 3rem;
+  --touch-min-size: 2.75rem;
+  --container-max: 77.5rem;
+  --form-max: 28rem;
+  --empty-copy-max: 24rem;
+  --shadow-card: 0 12px 40px #10244708;
+  --opacity-disabled: 0.6;
+}
