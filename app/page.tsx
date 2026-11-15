@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { siteUrl } from "./site";
+import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Noche de verano",

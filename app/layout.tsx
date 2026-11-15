@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
-import { siteUrl } from "./site";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const sans = DM_Sans({ subsets: ["latin"], variable: "--font-sans", display: "swap" });

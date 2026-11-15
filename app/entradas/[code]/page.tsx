@@ -1,9 +1,9 @@
+import { formatEventDate } from "@/lib/dates";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { EVENT_TIME_ZONE } from "@/app/lib/registration";
-import { isTicketCode, ticketPath, ticketStatuses } from "@/app/lib/tickets";
+import { isTicketCode, ticketPath, ticketStatuses } from "@/lib/tickets";
 import TicketQr from "./ticket-qr";
-import { getPublicTicket } from "./data";
+import { getPublicTicket } from "@/lib/public-ticket";
 
 export default async function TicketPage({ params }: { params: Promise<{ code: string }> }) {
   await connection();
@@ -22,7 +22,7 @@ export default async function TicketPage({ params }: { params: Promise<{ code: s
       <div><dt>Asistente</dt><dd>{ticket.name}</dd></div>
       <div><dt>Correo electrónico</dt><dd>{ticket.email}</dd></div>
       <div><dt>Tipo de entrada</dt><dd>{ticket.ticketName}</dd></div>
-      <div><dt>Fecha y hora</dt><dd>{new Intl.DateTimeFormat("es-PE", { timeZone: EVENT_TIME_ZONE, dateStyle: "full", timeStyle: "short" }).format(new Date(ticket.event.date))}<small>Hora de Lima</small></dd></div>
+      <div><dt>Fecha y hora</dt><dd>{formatEventDate(ticket.event.date)}<small>Hora de Lima</small></dd></div>
       <div><dt>Lugar</dt><dd>{ticket.event.venue}</dd></div>
     </dl>
     <figure className="ticket-qr">

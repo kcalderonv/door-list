@@ -9,7 +9,9 @@ const hooks = registerHooks({
     if (specifier === "server-only") return { url: "test:server-only", shortCircuit: true };
     if (specifier === "nodemailer") return { url: "test:nodemailer", shortCircuit: true };
     if (specifier === "./public-ticket" && context.parentURL?.endsWith("/registration-email.ts")) return { url: "test:confirmed-ticket", shortCircuit: true };
-    if (["./mail-config", "./tickets", "./registration"].includes(specifier) && context.parentURL?.endsWith("/registration-email.ts")) return { url: new URL(`../app/lib/${specifier.slice(2)}.ts`, import.meta.url).href, shortCircuit: true };
+    if (["./mail-config", "./tickets", "./registration", "./dates"].includes(specifier) && context.parentURL?.endsWith("/registration-email.ts")) return { url: new URL(`../lib/${specifier.slice(2)}.ts`, import.meta.url).href, shortCircuit: true };
+    if (specifier.startsWith("@/lib/")) return { url: new URL("../lib/" + specifier.slice(6) + ".ts", import.meta.url).href, shortCircuit: true };
+    if (specifier.startsWith(".") && !specifier.endsWith(".ts") && context.parentURL?.includes("/lib/") && !context.parentURL.includes("/node_modules/")) return { url: new URL(specifier + ".ts", context.parentURL).href, shortCircuit: true };
     return next(specifier, context);
   },
   load(url, context, next) {
@@ -30,7 +32,7 @@ const hooks = registerHooks({
     return next(url, context);
   },
 });
-const { sendRegistrationEmail } = await import("../app/lib/registration-email.ts");
+const { sendRegistrationEmail } = await import("../lib/registration-email.ts");
 const keys = ["MAIL_ENABLED", "MAIL_TRANSPORT", "MAIL_FROM_ADDRESS", "MAIL_FROM_NAME", "APP_URL", "SMTP_HOST", "SMTP_PORT", "SMTP_SECURE", "SMTP_REQUIRE_TLS", "SMTP_USER", "SMTP_PASSWORD"];
 const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]));
 const code = "a1".repeat(32);

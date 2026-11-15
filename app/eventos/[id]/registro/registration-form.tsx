@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { initialRegistrationState, type PublicEvent, type RegistrationState } from "@/app/lib/registration";
+import { initialRegistrationState, type PublicEvent, type RegistrationState } from "@/lib/registration";
 import { registerForEvent } from "./actions";
-import { ticketPath } from "@/app/lib/tickets";
+import { ticketPath } from "@/lib/tickets";
 
 export default function RegistrationForm({ event: initialEvent }: { event: PublicEvent }) {
   const [state, action, pending] = useActionState(async (previous: RegistrationState, data: FormData): Promise<RegistrationState> => {

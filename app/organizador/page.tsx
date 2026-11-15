@@ -1,28 +1,21 @@
 "use client";
 
-import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
+import { type Session } from "@supabase/supabase-js";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { hasPublicRegistration } from "@/app/lib/registration";
+import { hasPublicRegistration } from "@/lib/registration";
 
-type EventRow = { id: string; title: string; description: string; date: string; venue: string; status: string; max_capacity: number };
-type TicketType = { id: string; event_id: string; name: string; max_capacity: number };
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-const supabase = url && key ? createClient(url, key) : null;
+import type { Event, TicketType } from "@/lib/contracts";
+import { localDate, formatOrganizerDate } from "@/lib/dates";
+import { supabase, loadOrganizerData } from "@/lib/supabase/organizer";
 const blank = { title: "", description: "", date: "", venue: "", status: "borrador", max_capacity: 1 };
 function Icon({ name }: { name: string }) { return <span className="material-icons-outlined app-icon" aria-hidden="true">{name}</span>; }
-function localDate(value: string) { const d = new Date(value); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
-function loadOrganizerData(client: SupabaseClient, userId: string) {
-  return Promise.all([client.from("events").select("*").eq("organizer_id", userId).order("date"), client.from("ticket_types").select("*")]);
-}
-
 export default function Organizer() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const [events, setEvents] = useState<EventRow[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -79,7 +72,7 @@ export default function Organizer() {
   const event = events.find(item => item.id === selected);
   const eventTicketTypes = ticketTypes.filter(item => item.event_id === selected);
   const assigned = eventTicketTypes.reduce((sum, item) => sum + item.max_capacity, 0);
-  function showForm(item?: EventRow) {
+  function showForm(item?: Event) {
     setEditing(item?.id ?? null);
     setForm(item ? { ...item, date: localDate(item.date) } : blank);
     setFormOpen(true);
@@ -100,7 +93,7 @@ export default function Organizer() {
       <section className="dashboard-intro"><div><p className="eyebrow">Panel de organizador</p><h1>Hagamos que suceda<span className="brand-dot">.</span></h1><p>Todo lo que necesitas para tus próximos encuentros.</p></div><button className="primary create-button" onClick={() => showForm()}><Icon name="add" /> Crear evento</button></section>
       {message && <p className="notice" role="status">{message}</p>}
       <div className="workspace"><section className="events-section" aria-labelledby="events-title"><div className="section-heading"><div><p className="eyebrow">Tu agenda</p><h2 id="events-title">Mis eventos <span className="count">{events.length}</span></h2></div><span className="section-hint">Todos tus encuentros, en un lugar</span></div>
-      {events.length === 0 ? <div className="empty-state"><div className="empty-icon"><Icon name="event_available" /></div><h3>Tu próximo evento empieza aquí</h3><p>Crea un evento para empezar a organizar sus entradas y aforo.</p><button className="secondary" onClick={() => showForm()}>Crear mi primer evento</button></div> : <div className="event-list">{events.map(item => <article className={"event-card" + (selected === item.id ? " selected" : "")} key={item.id}><div className="event-card-top"><div className="date-tile"><strong>{new Date(item.date).toLocaleDateString("es-PE", {day:"2-digit"})}</strong><span>{new Date(item.date).toLocaleDateString("es-PE", {month:"short"}).replace(".", "")}</span></div><div className="event-card-title"><span className={"status " + (item.status === "publicado" ? "published" : "draft")}>{item.status === "publicado" ? "Publicado" : "Borrador"}</span><h3>{item.title}</h3><p>{item.venue}</p></div></div><div className="event-meta"><span>{new Date(item.date).toLocaleString("es-PE", {dateStyle:"medium",timeStyle:"short"})}</span><span>Aforo: {item.max_capacity}</span></div><div className="actions">{hasPublicRegistration(item) && <Link className="public-registration-link" href={`/eventos/${item.id}/registro`} prefetch={false}><Icon name="open_in_new" />Ver registro público</Link>}<button className="secondary" aria-pressed={selected === item.id} onClick={() => showTickets(item.id)}><Icon name="confirmation_number" />{selected === item.id ? "Viendo entradas" : "Gestionar entradas"}</button><button className="text-button" onClick={() => showForm(item)}><Icon name="edit" />Editar</button><button className="danger" disabled={busy} onClick={() => void remove("events", item.id)}><Icon name="delete_outline" />Eliminar</button></div></article>)}</div>}</section>
+      {events.length === 0 ? <div className="empty-state"><div className="empty-icon"><Icon name="event_available" /></div><h3>Tu próximo evento empieza aquí</h3><p>Crea un evento para empezar a organizar sus entradas y aforo.</p><button className="secondary" onClick={() => showForm()}>Crear mi primer evento</button></div> : <div className="event-list">{events.map(item => <article className={"event-card" + (selected === item.id ? " selected" : "")} key={item.id}><div className="event-card-top"><div className="date-tile"><strong>{formatOrganizerDate(item.date, "day")}</strong><span>{formatOrganizerDate(item.date, "month")}</span></div><div className="event-card-title"><span className={"status " + (item.status === "publicado" ? "published" : "draft")}>{item.status === "publicado" ? "Publicado" : "Borrador"}</span><h3>{item.title}</h3><p>{item.venue}</p></div></div><div className="event-meta"><span>{formatOrganizerDate(item.date)}</span><span>Aforo: {item.max_capacity}</span></div><div className="actions">{hasPublicRegistration(item) && <Link className="public-registration-link" href={`/eventos/${item.id}/registro`} prefetch={false}><Icon name="open_in_new" />Ver registro público</Link>}<button className="secondary" aria-pressed={selected === item.id} onClick={() => showTickets(item.id)}><Icon name="confirmation_number" />{selected === item.id ? "Viendo entradas" : "Gestionar entradas"}</button><button className="text-button" onClick={() => showForm(item)}><Icon name="edit" />Editar</button><button className="danger" disabled={busy} onClick={() => void remove("events", item.id)}><Icon name="delete_outline" />Eliminar</button></div></article>)}</div>}</section>
       {formOpen && <section className="panel event-form" id="event-form" aria-labelledby="form-title"><div className="panel-heading"><div><p className="eyebrow">Los detalles importan</p><h2 id="form-title">{editing ? "Editar evento" : "Crear evento"}</h2><p>Cuéntanos sobre tu próximo encuentro.</p></div><button className="close-button" type="button" aria-label="Cerrar formulario" onClick={() => {setFormOpen(false);setEditing(null);setForm(blank);}}><Icon name="close" /></button></div><form onSubmit={saveEvent}>
         <label>Nombre del evento<input required value={form.title} onChange={e => setForm({...form,title:e.target.value})} placeholder="Ej. Noche de verano" /></label>
         <label>Descripción<textarea required value={form.description} onChange={e => setForm({...form,description:e.target.value})} placeholder="¿Qué hace especial a tu evento?" /></label>

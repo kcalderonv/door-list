@@ -9,10 +9,12 @@ globalThis.__registrationTestDatabase = database;
 globalThis.__registrationTestMail = mail;
 const hooks = registerHooks({
   resolve(specifier, context, next) {
-    if (specifier === "@/app/lib/registration") return { url: new URL("../app/lib/registration.ts", import.meta.url).href, shortCircuit: true };
-    if (specifier === "@/app/lib/tickets") return { url: new URL("../app/lib/tickets.ts", import.meta.url).href, shortCircuit: true };
-    if (specifier === "@/app/lib/registration-email") return { url: "test:registration-mail", shortCircuit: true };
-    if (specifier === "./data" && context.parentURL?.endsWith("/actions.ts")) return { url: "test:registration-data", shortCircuit: true };
+    if (specifier === "@/lib/registration") return { url: new URL("../lib/registration.ts", import.meta.url).href, shortCircuit: true };
+    if (specifier === "@/lib/tickets") return { url: new URL("../lib/tickets.ts", import.meta.url).href, shortCircuit: true };
+    if (specifier === "@/lib/registration-email") return { url: "test:registration-mail", shortCircuit: true };
+    if (["@/lib/public-event", "@/lib/supabase/public-client"].includes(specifier) && context.parentURL?.endsWith("/actions.ts")) return { url: "test:registration-data", shortCircuit: true };
+    if (specifier.startsWith("@/lib/")) return { url: new URL("../lib/" + specifier.slice(6) + ".ts", import.meta.url).href, shortCircuit: true };
+    if (specifier.startsWith(".") && !specifier.endsWith(".ts") && context.parentURL?.includes("/lib/") && !context.parentURL.includes("/node_modules/")) return { url: new URL(specifier + ".ts", context.parentURL).href, shortCircuit: true };
     return next(specifier, context);
   },
   load(url, context, next) {

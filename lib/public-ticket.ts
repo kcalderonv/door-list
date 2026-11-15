@@ -1,6 +1,6 @@
 import "server-only";
-import { publicClient } from "@/app/lib/public-supabase";
-import { isTicketCode, type Ticket } from "@/app/lib/tickets";
+import { publicClient } from "@/lib/supabase/public-client";
+import { isTicketCode, type Ticket } from "@/lib/tickets";
 
 export async function getPublicTicket(code: string): Promise<Ticket | null> {
   if (!isTicketCode(code)) return null;

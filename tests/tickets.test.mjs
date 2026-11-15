@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, beforeEach, test } from "node:test";
 import { registerHooks } from "node:module";
-import { isTicketCode, ticketPath, ticketStatuses } from "../app/lib/tickets.ts";
+import { isTicketCode, ticketPath, ticketStatuses } from "../lib/tickets.ts";
 
 const code = "0123456789abcdef".repeat(4);
 const service = { calls: [], data: null, error: null };
@@ -9,9 +9,11 @@ globalThis.__ticketLookupTest = service;
 const hooks = registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "server-only") return { url: "test:server-only", shortCircuit: true };
-    if (specifier === "@/app/lib/tickets") return { url: new URL("../app/lib/tickets.ts", import.meta.url).href, shortCircuit: true };
-    if (specifier === "@/app/lib/public-ticket") return { url: new URL("../app/lib/public-ticket.ts", import.meta.url).href, shortCircuit: true };
-    if (specifier === "@/app/lib/public-supabase") return { url: "test:ticket-service", shortCircuit: true };
+    if (specifier === "@/lib/tickets") return { url: new URL("../lib/tickets.ts", import.meta.url).href, shortCircuit: true };
+    if (specifier === "@/lib/public-ticket") return { url: new URL("../lib/public-ticket.ts", import.meta.url).href, shortCircuit: true };
+    if (specifier === "@/lib/supabase/public-client") return { url: "test:ticket-service", shortCircuit: true };
+    if (specifier.startsWith("@/lib/")) return { url: new URL("../lib/" + specifier.slice(6) + ".ts", import.meta.url).href, shortCircuit: true };
+    if (specifier.startsWith(".") && !specifier.endsWith(".ts") && context.parentURL?.includes("/lib/") && !context.parentURL.includes("/node_modules/")) return { url: new URL(specifier + ".ts", context.parentURL).href, shortCircuit: true };
     return next(specifier, context);
   },
   load(url, context, next) {
@@ -27,7 +29,7 @@ const hooks = registerHooks({
     return next(url, context);
   },
 });
-const { getPublicTicket } = await import("../app/entradas/[code]/data.ts");
+const { getPublicTicket } = await import("../lib/public-ticket.ts");
 beforeEach(() => { service.calls = []; service.data = null; service.error = null; });
 after(() => { hooks.deregister(); delete globalThis.__ticketLookupTest; });
 

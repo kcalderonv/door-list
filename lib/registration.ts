@@ -1,4 +1,6 @@
-export const EVENT_TIME_ZONE = "America/Lima";
+import { limaDate } from "./dates";
+export { EVENT_TIME_ZONE, limaDate } from "./dates";
+import type { EmailDelivery } from "./contracts";
 
 export type PublicTicketType = { id: string; name: string; remaining: number };
 export type PublicEvent = {
@@ -22,7 +24,7 @@ export type RegistrationState = {
   event?: PublicEvent | null;
   ticketName?: string;
   ticketCode?: string;
-  emailDelivery?: "sent" | "failed" | "disabled";
+  emailDelivery?: EmailDelivery;
 };
 
 export const initialRegistrationState: RegistrationState = { status: "idle", message: "", fieldErrors: {} };
@@ -44,10 +46,6 @@ export function validateRegistration(formData: FormData): { fields: Registration
     errors.email = "Ingresa un correo electrónico válido (máximo 254 caracteres).";
   }
   return { fields, errors };
-}
-
-export function limaDate(value: string | Date): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: EVENT_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
 }
 
 export function hasPublicRegistration(event: { status: string; date: string }, now = new Date()): boolean {

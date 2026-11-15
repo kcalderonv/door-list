@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hasPublicRegistration, isUuid, limaDate, validateRegistration } from "../app/lib/registration.ts";
+import { registerHooks } from "node:module";
+registerHooks({ resolve(specifier, context, next) {
+ if (specifier === "./dates" && context.parentURL?.endsWith("/lib/registration.ts")) return {url: new URL("../lib/dates.ts", import.meta.url).href, shortCircuit: true};
+ return next(specifier, context);
+}});
+const { hasPublicRegistration, isUuid, limaDate, validateRegistration } = await import("../lib/registration.ts");
 
 const ticketId = "8f9a1248-8cf1-4739-9d8a-e0d6a7847353";
 function fields(overrides = {}) {

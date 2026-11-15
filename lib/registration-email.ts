@@ -1,12 +1,12 @@
 import "server-only";
+import { formatEventDate } from "./dates";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 import { mailConfig } from "./mail-config";
 import { isTicketCode, ticketPath } from "./tickets";
 import { getPublicTicket } from "./public-ticket";
-import { EVENT_TIME_ZONE } from "./registration";
 
-export type EmailDelivery = "sent" | "failed" | "disabled";
+import type { EmailDelivery } from "./contracts";
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
@@ -21,7 +21,7 @@ export async function sendRegistrationEmail(code: string): Promise<EmailDelivery
     // browser-provided titles, dates, venues or an arbitrary recipient.
     const ticket = await getPublicTicket(code);
     if (!ticket || ticket.status !== "valid" || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(ticket.email)) throw new Error("Invalid ticket email");
-    const date = new Intl.DateTimeFormat("es-PE", { timeZone: EVENT_TIME_ZONE, dateStyle: "full", timeStyle: "short" }).format(new Date(ticket.event.date));
+    const date = formatEventDate(ticket.event.date);
     const url = new URL(ticketPath(code), config.origin).href;
     const qr = await QRCode.toBuffer(code, { type: "png", errorCorrectionLevel: "M", margin: 4, width: 320 });
     const transporter = nodemailer.createTransport(config.smtp);

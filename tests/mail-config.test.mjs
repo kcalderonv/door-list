@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mailConfig } from "../app/lib/mail-config.ts";
+import { mailConfig } from "../lib/mail-config.ts";
 
 const sender = { MAIL_ENABLED: "true", MAIL_FROM_ADDRESS: "entradas@example.com", MAIL_FROM_NAME: "Door List" };
 const sandbox = { ...sender, MAILTRAP_SMTP_USER: "sandbox-user", MAILTRAP_SMTP_PASSWORD: "sandbox-password" };

@@ -1,8 +1,9 @@
+import { formatEventDate } from "@/lib/dates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { EVENT_TIME_ZONE, isUuid } from "@/app/lib/registration";
-import { getPublicEvent } from "./data";
+import { isUuid } from "@/lib/registration";
+import { getPublicEvent } from "@/lib/public-event";
 import RegistrationForm from "./registration-form";
 
 export const metadata: Metadata = { title: "Registro al evento" };
@@ -20,7 +21,7 @@ export default async function RegistrationPage({ params }: { params: Promise<{ i
       <h1 id="event-title">{event.title}</h1>
       <p className="registration-description">{event.description}</p>
       <dl className="registration-facts">
-        <div><dt>Fecha y hora</dt><dd>{new Intl.DateTimeFormat("es-PE", { timeZone: EVENT_TIME_ZONE, dateStyle: "full", timeStyle: "short" }).format(new Date(event.date))}<small>Hora de Lima</small></dd></div>
+        <div><dt>Fecha y hora</dt><dd>{formatEventDate(event.date)}<small>Hora de Lima</small></dd></div>
         <div><dt>Lugar</dt><dd>{event.venue}</dd></div>
       </dl>
       <p className="registration-note">Puedes registrarte durante todo el día del evento, mientras haya cupo.</p>

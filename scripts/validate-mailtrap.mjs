@@ -6,7 +6,7 @@ import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import nextEnv from "@next/env";
 import nodemailer from "nodemailer";
-import { mailConfig } from "../app/lib/mail-config.ts";
+import { mailConfig } from "../lib/mail-config.ts";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 nextEnv.loadEnvConfig(root, true, { info() {}, error() {} });
@@ -22,7 +22,7 @@ const hooks = registerHooks({
     if (specifier === "server-only") return { url: "test:server-only", shortCircuit: true };
     if (context.parentURL?.endsWith("/registration-email.ts")) {
       if (specifier === "./public-ticket") return { url: "test:mailtrap-fixture", shortCircuit: true };
-      if (["./mail-config", "./tickets", "./registration"].includes(specifier)) return { url: new URL(`../app/lib/${specifier.slice(2)}.ts`, import.meta.url).href, shortCircuit: true };
+      if (["./mail-config", "./tickets", "./registration", "./dates"].includes(specifier)) return { url: new URL(`../lib/${specifier.slice(2)}.ts`, import.meta.url).href, shortCircuit: true };
     }
     return next(specifier, context);
   },
@@ -45,7 +45,7 @@ try {
     transporter.close();
   }
   if (process.argv.includes("--send")) {
-    const { sendRegistrationEmail } = await import("../app/lib/registration-email.ts");
+    const { sendRegistrationEmail } = await import("../lib/registration-email.ts");
     const delivery = await sendRegistrationEmail(randomBytes(32).toString("hex"));
     if (delivery !== "sent") throw new Error("DELIVERY_FAILED");
     console.log('PASS: Mailtrap accepted "PRUEBA SMTP — Door List", including event, Lima date/time, venue and embedded PNG QR. No reservation was created.');

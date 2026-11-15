@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { isTicketCode } from "@/app/lib/tickets";
+import { isTicketCode } from "@/lib/tickets";
 
 export default function TicketQr({ code }: { code: string }) {
   if (!isTicketCode(code)) throw new Error("Invalid ticket code");

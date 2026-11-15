@@ -1,9 +1,12 @@
 "use server";
+import { mapRegistration } from "@/lib/supabase/mappers";
+import type { EmailDelivery } from "@/lib/contracts";
 
-import { isUuid, validateRegistration, type RegistrationState } from "@/app/lib/registration";
-import { isTicketCode } from "@/app/lib/tickets";
-import { sendRegistrationEmail } from "@/app/lib/registration-email";
-import { getPublicEvent, publicClient } from "./data";
+import { isUuid, validateRegistration, type RegistrationState } from "@/lib/registration";
+import { isTicketCode } from "@/lib/tickets";
+import { sendRegistrationEmail } from "@/lib/registration-email";
+import { getPublicEvent } from "@/lib/public-event";
+import { publicClient } from "@/lib/supabase/public-client";
 
 export async function registerForEvent(
   eventId: string,
@@ -19,24 +22,25 @@ export async function registerForEvent(
   }
 
   try {
-    const { data, error } = await publicClient().rpc("create_registration", {
+    const { data: rawData, error } = await publicClient().rpc("create_registration", {
       p_event_id: eventId,
       p_ticket_type_id: fields.ticketTypeId,
       p_name: fields.name,
       p_email: fields.email,
     });
+    const data = mapRegistration(rawData);
     if (error) throw new Error("Registration request failed");
 
-    if (data?.code === "CREATED" && isUuid(data.registration_id ?? "") && typeof data.ticket_name === "string" && isTicketCode(data.ticket_code)) {
+    if (data?.code === "CREATED" && isUuid(data.registrationId ?? "") && typeof data.ticketName === "string" && isTicketCode(data.ticketCode)) {
       // Issuance has already committed. Email delivery must never turn a valid
       // registration into an error or prompt another registration attempt.
-      let emailDelivery: "sent" | "failed" | "disabled" = "failed";
+      let emailDelivery: EmailDelivery = "failed";
       try {
-        emailDelivery = await sendRegistrationEmail(data.ticket_code);
+        emailDelivery = await sendRegistrationEmail(data.ticketCode);
       } catch {
         // Preserve confirmation even if the mail adapter unexpectedly throws.
       }
-      return { status: "success", message: "Registro confirmado", fieldErrors: {}, ticketName: data.ticket_name, ticketCode: data.ticket_code, emailDelivery };
+      return { status: "success", message: "Registro confirmado", fieldErrors: {}, ticketName: data.ticketName, ticketCode: data.ticketCode, emailDelivery };
     }
     if (data?.code === "EVENT_UNAVAILABLE") {
       return { status: "unavailable", message: "Este evento ya no admite registros. Puede haber finalizado o dejado de estar publicado.", fieldErrors: {}, event: null };
