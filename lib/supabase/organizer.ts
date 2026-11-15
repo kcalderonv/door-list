@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { OrganizerEventDetails, TicketType } from "../contracts";
+import type { OrganizerAttendance, OrganizerEventDetails, TicketType } from "../contracts";
 import { mapOrganizerEvent, mapOrganizerTicketType } from "./mappers";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -15,5 +15,11 @@ export async function loadOrganizerData(client: SupabaseClient, userId: string) 
 export async function loadOrganizerEventDetails(client: SupabaseClient, eventId: string): Promise<OrganizerEventDetails | null> {
  const { data, error } = await client.rpc("get_organizer_event_details", { p_event_id: eventId });
  if (error) throw new Error("No se pudieron cargar los registros. Inténtalo nuevamente.");
+ return data;
+}
+
+export async function loadOrganizerAttendance(client: SupabaseClient, eventId: string): Promise<OrganizerAttendance | null> {
+ const { data, error } = await client.rpc("get_organizer_attendance", { p_event_id: eventId });
+ if (error) throw new Error("No se pudieron cargar los asistentes. Inténtalo nuevamente.");
  return data;
 }

@@ -10,7 +10,7 @@ const hooks = registerHooks({
     return next(specifier, context);
   },
 });
-const { loadOrganizerData, loadOrganizerEventDetails } = await import("../lib/supabase/organizer.ts");
+const { loadOrganizerData, loadOrganizerEventDetails, loadOrganizerAttendance } = await import("../lib/supabase/organizer.ts");
 after(() => hooks.deregister());
 
 function mockClient(results) {
@@ -63,4 +63,18 @@ test("details use the authenticated RPC and preserve a denied or missing event",
 test("provider errors never expose database details", async () => {
   const client = { async rpc() { return { data: null, error: { message: "Private SQL details" } }; } };
   await assert.rejects(loadOrganizerEventDetails(client, "event"), { message: "No se pudieron cargar los registros. Inténtalo nuevamente." });
+});
+
+test("attendance uses the caller's RLS-protected RPC and returns no data for another owner", async () => {
+  const client = { async rpc(name, args) {
+    assert.equal(name, "get_organizer_attendance");
+    assert.deepEqual(args, { p_event_id: "another-owner-event" });
+    return { data: null, error: null };
+  } };
+  assert.equal(await loadOrganizerAttendance(client, "another-owner-event"), null);
+});
+
+test("attendance provider errors cannot be downloaded as an empty event or expose private messages", async () => {
+  const client = { async rpc() { return { data: null, error: { message: "private SQL or JWT failure" } }; } };
+  await assert.rejects(loadOrganizerAttendance(client, "event"), { message: "No se pudieron cargar los asistentes. Inténtalo nuevamente." });
 });

@@ -17,5 +17,19 @@ export type OrganizerEventDetails = {
   registrations: Registration[];
 };
 
+export type OrganizerAttendee = Registration & {
+  ticket: Pick<import("./tickets").Ticket, "status" | "issuedAt"> & {
+    code: string;
+    salesStatus: "active" | "cancelled" | "refunded";
+  };
+};
+export type OrganizerAttendance = {
+  eventId: string;
+  eventTitle: string;
+  maxCapacity: number;
+  ticketTypes: (Omit<TicketType, "maxCapacity"> & { maxCapacity: number | null })[];
+  attendees: OrganizerAttendee[];
+};
+
 export type RegistrationRequest = import("./registration").RegistrationFields & { eventId: string };
 export type RegistrationResponse = { registrationId: string; ticketName: string; ticketCode: string; emailDelivery: EmailDelivery };
