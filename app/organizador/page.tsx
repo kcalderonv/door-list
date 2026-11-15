@@ -3,6 +3,7 @@
 import { type Session } from "@supabase/supabase-js";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { providerMessage } from "@/lib/provider-errors";
 import { hasPublicRegistration } from "@/lib/registration";
 
 import type { Event, TicketType } from "@/lib/contracts";
@@ -35,7 +36,7 @@ export default function Organizer() {
   async function refresh() {
     if (!supabase || !session) return;
     const [e, t] = await loadOrganizerData(supabase, session.user.id);
-    if (e.error || t.error) { setMessage((e.error || t.error)?.message || "Error al cargar los datos"); return; }
+    if (e.error || t.error) { setMessage(providerMessage(e.error || t.error)); return; }
     setEvents(e.data || []); setTicketTypes(t.data || []);
   }
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function Organizer() {
     let cancelled = false;
     void loadOrganizerData(supabase, session.user.id).then(([e, t]) => {
       if (cancelled) return;
-      if (e.error || t.error) { setMessage((e.error || t.error)?.message || "Error al cargar los datos"); return; }
+      if (e.error || t.error) { setMessage(providerMessage(e.error || t.error)); return; }
       setEvents(e.data || []); setTicketTypes(t.data || []);
     });
     return () => { cancelled = true; };
@@ -57,17 +58,17 @@ export default function Organizer() {
   async function saveEvent(e: FormEvent) {
     e.preventDefault(); if (!supabase) return; setBusy(true); setMessage("");
     const { error } = await supabase.rpc("save_event", { p_id: editing, p_title: form.title.trim(), p_description: form.description.trim(), p_date: new Date(form.date).toISOString(), p_venue: form.venue.trim(), p_status: form.status, p_capacity: Number(form.max_capacity) });
-    if (error) setMessage(error.message); else { setForm(blank); setEditing(null); setFormOpen(false); await refresh(); setMessage("Evento guardado."); } setBusy(false);
+    if (error) setMessage(providerMessage(error)); else { setForm(blank); setEditing(null); setFormOpen(false); await refresh(); setMessage("Evento guardado."); } setBusy(false);
   }
   async function saveTicket(e: FormEvent) {
     e.preventDefault(); if (!supabase || !selected) return; setBusy(true); setMessage("");
     const { error } = await supabase.rpc("save_ticket_type", { p_id: ticketId, p_event_id: selected, p_name: ticketName.trim(), p_capacity: Number(ticketCapacity) });
-    if (error) setMessage(error.code === "23505" ? "Ya existe un tipo de entrada con ese nombre." : error.message); else { setTicketId(null); setTicketName(""); setTicketCapacity(1); await refresh(); setMessage("Tipo de entrada guardado."); } setBusy(false);
+    if (error) setMessage(error.code === "23505" ? "Ya existe un tipo de entrada con ese nombre." : providerMessage(error)); else { setTicketId(null); setTicketName(""); setTicketCapacity(1); await refresh(); setMessage("Tipo de entrada guardado."); } setBusy(false);
   }
   async function remove(table: "events" | "ticket_types", id: string) {
     if (!supabase || !confirm(table === "events" ? "¿Eliminar este evento y todos sus tipos de entrada?" : "¿Eliminar este tipo de entrada?")) return;
     setBusy(true); setMessage(""); const { error } = await supabase.from(table).delete().eq("id", id);
-    if (error) setMessage(error.code === "23503" ? (table === "events" ? "No puedes eliminar un evento con personas registradas. Puedes cambiar su estado a borrador para cerrar nuevos registros." : "No puedes eliminar una entrada con personas registradas.") : error.message); else { if (table === "events" && selected === id) setSelected(null); await refresh(); setMessage("Eliminado correctamente."); } setBusy(false);
+    if (error) setMessage(error.code === "23503" ? (table === "events" ? "No puedes eliminar un evento con personas registradas. Puedes cambiar su estado a borrador para cerrar nuevos registros." : "No puedes eliminar una entrada con personas registradas.") : providerMessage(error)); else { if (table === "events" && selected === id) setSelected(null); await refresh(); setMessage("Eliminado correctamente."); } setBusy(false);
   }
   const event = events.find(item => item.id === selected);
   const eventTicketTypes = ticketTypes.filter(item => item.event_id === selected);

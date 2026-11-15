@@ -22,6 +22,8 @@ export type RegistrationState = {
   fieldErrors: FieldErrors;
   // Undefined preserves the last snapshot; null means registration has closed.
   event?: PublicEvent | null;
+  errorCode?: string;
+  registrationId?: string;
   ticketName?: string;
   ticketCode?: string;
   emailDelivery?: EmailDelivery;

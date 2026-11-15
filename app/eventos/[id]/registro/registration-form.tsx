@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { initialRegistrationState, type PublicEvent, type RegistrationState } from "@/lib/registration";
-import { registerForEvent } from "./actions";
+import { registerForEvent } from "@/lib/registration-client";
 import { ticketPath } from "@/lib/tickets";
 
 export default function RegistrationForm({ event: initialEvent }: { event: PublicEvent }) {

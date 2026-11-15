@@ -2,22 +2,24 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import { after, beforeEach, test } from "node:test";
 
-// Exercise the real Server Action while replacing only its database boundary.
+// Exercise the registration service while replacing only its database boundary.
 const database = { result: null, event: null, failure: false, calls: [] };
 const mail = { calls: [], result: "sent", failure: false };
 globalThis.__registrationTestDatabase = database;
 globalThis.__registrationTestMail = mail;
 const hooks = registerHooks({
   resolve(specifier, context, next) {
+    if (specifier === "server-only") return {url: "test:server-only", shortCircuit: true};
     if (specifier === "@/lib/registration") return { url: new URL("../lib/registration.ts", import.meta.url).href, shortCircuit: true };
     if (specifier === "@/lib/tickets") return { url: new URL("../lib/tickets.ts", import.meta.url).href, shortCircuit: true };
     if (specifier === "@/lib/registration-email") return { url: "test:registration-mail", shortCircuit: true };
-    if (["@/lib/public-event", "@/lib/supabase/public-client"].includes(specifier) && context.parentURL?.endsWith("/actions.ts")) return { url: "test:registration-data", shortCircuit: true };
+    if (["@/lib/public-event", "@/lib/supabase/public-client"].includes(specifier) && context.parentURL?.endsWith("/registration-service.ts")) return { url: "test:registration-data", shortCircuit: true };
     if (specifier.startsWith("@/lib/")) return { url: new URL("../lib/" + specifier.slice(6) + ".ts", import.meta.url).href, shortCircuit: true };
     if (specifier.startsWith(".") && !specifier.endsWith(".ts") && context.parentURL?.includes("/lib/") && !context.parentURL.includes("/node_modules/")) return { url: new URL(specifier + ".ts", context.parentURL).href, shortCircuit: true };
     return next(specifier, context);
   },
   load(url, context, next) {
+    if (url === "test:server-only") return { format: "module", source: "", shortCircuit: true };
     if (url === "test:registration-mail") return {
       format: "module", shortCircuit: true,
       source: `export async function sendRegistrationEmail(ticket) {
@@ -44,7 +46,7 @@ const hooks = registerHooks({
     return next(url, context);
   },
 });
-const { registerForEvent } = await import("../app/eventos/[id]/registro/actions.ts");
+const { registerForEvent } = await import("../lib/registration-service.ts");
 const eventId = "8f9a1248-8cf1-4739-9d8a-e0d6a7847353";
 const ticketId = "976722c2-e5d2-4a2a-8207-7c571b9fab3c";
 const initial = { status: "idle", message: "", fieldErrors: {} };
