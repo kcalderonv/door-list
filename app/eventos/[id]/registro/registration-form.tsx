@@ -20,7 +20,7 @@ export default function RegistrationForm({ event: initialEvent }: { event: Publi
   const feedback = useRef<HTMLDivElement>(null);
   const form = useRef<HTMLFormElement>(null);
   const event = state.event === undefined ? initialEvent : state.event;
-  const tickets = event?.tickets ?? [];
+  const tickets = event?.ticketTypes ?? [];
   const available = !!event && event.remaining > 0 && tickets.some(ticket => ticket.remaining > 0);
   const selection = tickets.some(ticket => ticket.id === ticketId && ticket.remaining > 0) ? ticketId : "";
 

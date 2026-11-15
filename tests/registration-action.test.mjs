@@ -113,7 +113,7 @@ test("email failure or disabled email never removes a committed ticket confirmat
 });
 
 test("sold-out and removed tickets refresh the event's options", async () => {
-  const fresh = { id: eventId, remaining: 1, tickets: [{ id: "another-ticket", name: "Alternativa", remaining: 1 }] };
+  const fresh = { id: eventId, remaining: 1, ticketTypes: [{ id: "another-ticket", name: "Alternativa", remaining: 1 }] };
   database.event = fresh;
   for (const code of ["SOLD_OUT", "INVALID_TICKET_TYPE"]) {
     database.result = { data: { code }, error: null };

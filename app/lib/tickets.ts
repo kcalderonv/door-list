@@ -1,6 +1,6 @@
 export type TicketStatus = "valid" | "used" | "revoked";
 
-export type IssuedTicket = {
+export type Ticket = {
   status: TicketStatus;
   name: string;
   email: string;

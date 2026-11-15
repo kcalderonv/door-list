@@ -6,7 +6,7 @@ import Link from "next/link";
 import { hasPublicRegistration } from "@/app/lib/registration";
 
 type EventRow = { id: string; title: string; description: string; date: string; venue: string; status: string; max_capacity: number };
-type Ticket = { id: string; event_id: string; name: string; max_capacity: number };
+type TicketType = { id: string; event_id: string; name: string; max_capacity: number };
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 const supabase = url && key ? createClient(url, key) : null;
@@ -14,7 +14,7 @@ const blank = { title: "", description: "", date: "", venue: "", status: "borrad
 function Icon({ name }: { name: string }) { return <span className="material-icons-outlined app-icon" aria-hidden="true">{name}</span>; }
 function localDate(value: string) { const d = new Date(value); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
 function loadOrganizerData(client: SupabaseClient, userId: string) {
-  return Promise.all([client.from("events").select("*").eq("organizer_id", userId).order("date"), client.from("tickets_types").select("*")]);
+  return Promise.all([client.from("events").select("*").eq("organizer_id", userId).order("date"), client.from("ticket_types").select("*")]);
 }
 
 export default function Organizer() {
@@ -23,7 +23,7 @@ export default function Organizer() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [events, setEvents] = useState<EventRow[]>([]);
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -36,14 +36,14 @@ export default function Organizer() {
     if (!supabase) return;
     const client = supabase;
     client.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); });
-    const { data } = client.auth.onAuthStateChange((_event, next) => { setSession(next); if (!next) { setEvents([]); setTickets([]); setSelected(null); } });
+    const { data } = client.auth.onAuthStateChange((_event, next) => { setSession(next); if (!next) { setEvents([]); setTicketTypes([]); setSelected(null); } });
     return () => data.subscription.unsubscribe();
   }, []);
   async function refresh() {
     if (!supabase || !session) return;
     const [e, t] = await loadOrganizerData(supabase, session.user.id);
     if (e.error || t.error) { setMessage((e.error || t.error)?.message || "Error al cargar los datos"); return; }
-    setEvents(e.data || []); setTickets(t.data || []);
+    setEvents(e.data || []); setTicketTypes(t.data || []);
   }
   useEffect(() => {
     if (!session || !supabase) return;
@@ -51,7 +51,7 @@ export default function Organizer() {
     void loadOrganizerData(supabase, session.user.id).then(([e, t]) => {
       if (cancelled) return;
       if (e.error || t.error) { setMessage((e.error || t.error)?.message || "Error al cargar los datos"); return; }
-      setEvents(e.data || []); setTickets(t.data || []);
+      setEvents(e.data || []); setTicketTypes(t.data || []);
     });
     return () => { cancelled = true; };
   }, [session]);
@@ -71,14 +71,14 @@ export default function Organizer() {
     const { error } = await supabase.rpc("save_ticket_type", { p_id: ticketId, p_event_id: selected, p_name: ticketName.trim(), p_capacity: Number(ticketCapacity) });
     if (error) setMessage(error.code === "23505" ? "Ya existe un tipo de entrada con ese nombre." : error.message); else { setTicketId(null); setTicketName(""); setTicketCapacity(1); await refresh(); setMessage("Tipo de entrada guardado."); } setBusy(false);
   }
-  async function remove(table: "events" | "tickets_types", id: string) {
+  async function remove(table: "events" | "ticket_types", id: string) {
     if (!supabase || !confirm(table === "events" ? "¿Eliminar este evento y todos sus tipos de entrada?" : "¿Eliminar este tipo de entrada?")) return;
     setBusy(true); setMessage(""); const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) setMessage(error.code === "23503" ? (table === "events" ? "No puedes eliminar un evento con personas registradas. Puedes cambiar su estado a borrador para cerrar nuevos registros." : "No puedes eliminar una entrada con personas registradas.") : error.message); else { if (table === "events" && selected === id) setSelected(null); await refresh(); setMessage("Eliminado correctamente."); } setBusy(false);
   }
   const event = events.find(item => item.id === selected);
-  const eventTickets = tickets.filter(item => item.event_id === selected);
-  const assigned = eventTickets.reduce((sum, item) => sum + item.max_capacity, 0);
+  const eventTicketTypes = ticketTypes.filter(item => item.event_id === selected);
+  const assigned = eventTicketTypes.reduce((sum, item) => sum + item.max_capacity, 0);
   function showForm(item?: EventRow) {
     setEditing(item?.id ?? null);
     setForm(item ? { ...item, date: localDate(item.date) } : blank);
@@ -109,7 +109,7 @@ export default function Organizer() {
         <div className="form-row"><label>Aforo máximo<input required type="number" min="1" step="1" value={form.max_capacity} onChange={e => setForm({...form,max_capacity:Number(e.target.value)})} /></label><label>Estado<select value={form.status} onChange={e => setForm({...form,status:e.target.value})}><option value="borrador">Borrador</option><option value="publicado">Publicado</option></select></label></div><p className="field-help">La suma de los aforos de tus entradas no puede superar este límite.</p>
         {message && <p className="notice" role="status">{message}</p>}<div className="form-actions"><button className="primary" disabled={busy}>{busy ? "Guardando…" : editing ? "Guardar cambios" : "Crear evento"}</button><button type="button" className="text-button" onClick={() => {setFormOpen(false);setEditing(null);setForm(blank);}}>Cancelar</button></div></form></section>}
       </div>
-      {event && <section className="panel ticket-panel" id="ticket-panel" aria-labelledby="tickets-title"><div className="panel-heading"><div><p className="eyebrow">Gestionar entradas</p><h2 id="tickets-title">{event.title}</h2><p>Define los tipos de entrada y su aforo.</p></div><button className="close-button" aria-label="Cerrar entradas" onClick={() => setSelected(null)}><Icon name="close" /></button></div><div className="capacity-summary"><div><span>Aforo asignado</span><strong>{assigned} <small>/ {event.max_capacity}</small></strong></div><div className="capacity-right"><span>Disponible</span><strong>{event.max_capacity - assigned}</strong></div><div className="capacity-track" role="progressbar" aria-label="Aforo asignado" aria-valuemin={0} aria-valuemax={event.max_capacity} aria-valuenow={assigned}><span style={{width: `${Math.min(100, assigned / event.max_capacity * 100)}%`}} /></div></div><div className="ticket-layout"><div><h3>Tipos de entrada <span className="count">{eventTickets.length}</span></h3>{eventTickets.length === 0 ? <p className="ticket-empty">Aún no hay tipos de entrada. Añade el primero para distribuir el aforo.</p> : eventTickets.map(item => <article className="ticket-item" key={item.id}><div><h4>{item.name}</h4><p>{item.max_capacity} lugares</p></div><div className="actions"><button className="text-button" onClick={() => {setTicketId(item.id);setTicketName(item.name);setTicketCapacity(item.max_capacity);document.getElementById("ticket-name")?.focus();}}><Icon name="edit" />Editar</button><button className="danger" disabled={busy} onClick={() => void remove("tickets_types",item.id)}><Icon name="delete_outline" />Eliminar</button></div></article>)}</div><form className="ticket-form" onSubmit={saveTicket}><h3>{ticketId ? "Editar entrada" : "Añadir tipo de entrada"}</h3><label>Nombre<input id="ticket-name" required value={ticketName} onChange={e => setTicketName(e.target.value)} placeholder="Ej. General" /></label><label>Aforo<input required type="number" min="1" step="1" value={ticketCapacity} onChange={e => setTicketCapacity(Number(e.target.value))} /></label>{message && <p className="notice" role="status">{message}</p>}<div className="form-actions"><button className="primary" disabled={busy}>{busy ? "Guardando…" : ticketId ? "Guardar cambios" : "Añadir entrada"}</button>{ticketId && <button type="button" className="text-button" onClick={() => {setTicketId(null);setTicketName("");setTicketCapacity(1);}}>Cancelar</button>}</div></form></div></section>}
+      {event && <section className="panel ticket-panel" id="ticket-panel" aria-labelledby="tickets-title"><div className="panel-heading"><div><p className="eyebrow">Gestionar entradas</p><h2 id="tickets-title">{event.title}</h2><p>Define los tipos de entrada y su aforo.</p></div><button className="close-button" aria-label="Cerrar entradas" onClick={() => setSelected(null)}><Icon name="close" /></button></div><div className="capacity-summary"><div><span>Aforo asignado</span><strong>{assigned} <small>/ {event.max_capacity}</small></strong></div><div className="capacity-right"><span>Disponible</span><strong>{event.max_capacity - assigned}</strong></div><div className="capacity-track" role="progressbar" aria-label="Aforo asignado" aria-valuemin={0} aria-valuemax={event.max_capacity} aria-valuenow={assigned}><span style={{width: `${Math.min(100, assigned / event.max_capacity * 100)}%`}} /></div></div><div className="ticket-layout"><div><h3>Tipos de entrada <span className="count">{eventTicketTypes.length}</span></h3>{eventTicketTypes.length === 0 ? <p className="ticket-empty">Aún no hay tipos de entrada. Añade el primero para distribuir el aforo.</p> : eventTicketTypes.map(item => <article className="ticket-item" key={item.id}><div><h4>{item.name}</h4><p>{item.max_capacity} lugares</p></div><div className="actions"><button className="text-button" onClick={() => {setTicketId(item.id);setTicketName(item.name);setTicketCapacity(item.max_capacity);document.getElementById("ticket-name")?.focus();}}><Icon name="edit" />Editar</button><button className="danger" disabled={busy} onClick={() => void remove("ticket_types",item.id)}><Icon name="delete_outline" />Eliminar</button></div></article>)}</div><form className="ticket-form" onSubmit={saveTicket}><h3>{ticketId ? "Editar entrada" : "Añadir tipo de entrada"}</h3><label>Nombre<input id="ticket-name" required value={ticketName} onChange={e => setTicketName(e.target.value)} placeholder="Ej. General" /></label><label>Aforo<input required type="number" min="1" step="1" value={ticketCapacity} onChange={e => setTicketCapacity(Number(e.target.value))} /></label>{message && <p className="notice" role="status">{message}</p>}<div className="form-actions"><button className="primary" disabled={busy}>{busy ? "Guardando…" : ticketId ? "Guardar cambios" : "Añadir entrada"}</button>{ticketId && <button type="button" className="text-button" onClick={() => {setTicketId(null);setTicketName("");setTicketCapacity(1);}}>Cancelar</button>}</div></form></div></section>}
       <footer className="dashboard-footer">Door List <span>·</span> Hecho para reunirnos.</footer></>}
   </main>;
 }

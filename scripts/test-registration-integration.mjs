@@ -138,7 +138,7 @@ try {
   const lowerTicket = await organizer.rpc("save_ticket_type", { p_id: event.tickets[1], p_event_id: event.id, p_name: "Entrada 1", p_capacity: 1 });
   assert.ok(lowerTicket.error?.message.includes("personas registradas"));
   assert.ok((await organizer.rpc("save_event", update(event.id, "publicado", start.toISOString(), 2))).error?.message.includes("personas registradas"));
-  assert.equal((await organizer.from("tickets_types").delete().eq("id", event.tickets[0])).error?.code, "23503");
+  assert.equal((await organizer.from("ticket_types").delete().eq("id", event.tickets[0])).error?.code, "23503");
   assert.equal((await organizer.from("events").delete().eq("id", event.id)).error?.code, "23503");
   await rpc(organizer, "save_event", update(event.id, "borrador", start.toISOString(), 3));
   assert.equal(await snapshot(event.id), null);
@@ -148,7 +148,7 @@ try {
   await rpc(organizer, "save_event", update(future.id, "publicado", yesterday, 1));
   assert.equal((await register(future.id, future.tickets[0])).code, "EVENT_UNAVAILABLE", "date changed after page load");
   await rpc(organizer, "save_event", update(future.id, "publicado", tomorrow, 1));
-  assert.ifError((await organizer.from("tickets_types").delete().eq("id", future.tickets[0])).error);
+  assert.ifError((await organizer.from("ticket_types").delete().eq("id", future.tickets[0])).error);
   assert.equal((await register(future.id, future.tickets[0])).code, "INVALID_TICKET_TYPE");
   console.log("PASS: eligibility, capacity, atomic ticket issuance, unique secrets, duplicates, status, privacy and organizer protections");
 } finally {

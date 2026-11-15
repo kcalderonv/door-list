@@ -7,5 +7,5 @@ export { publicClient };
 export async function getPublicEvent(id: string): Promise<PublicEvent | null> {
   const { data, error } = await publicClient().rpc("get_public_event", { p_event_id: id });
   if (error) throw new Error("Could not load public event");
-  return data as PublicEvent | null;
+  return data ? { ...data, ticketTypes: data.tickets } as PublicEvent : null;
 }

@@ -1,6 +1,6 @@
 export const EVENT_TIME_ZONE = "America/Lima";
 
-export type PublicTicket = { id: string; name: string; remaining: number };
+export type PublicTicketType = { id: string; name: string; remaining: number };
 export type PublicEvent = {
   id: string;
   title: string;
@@ -8,7 +8,7 @@ export type PublicEvent = {
   date: string;
   venue: string;
   remaining: number;
-  tickets: PublicTicket[];
+  ticketTypes: PublicTicketType[];
 };
 
 export type RegistrationFields = { ticketTypeId: string; name: string; email: string };
