@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-15T22:56:16.567Z",
+  "title": "Design System: Door List",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Azul marino profundo",
+        "tonalRamp": [
+          "oklch(15.00% 0.0363 258.49)",
+          "oklch(26.43% 0.0591 258.49)",
+          "oklch(37.86% 0.0743 258.49)",
+          "oklch(49.29% 0.0800 258.49)",
+          "oklch(60.71% 0.0755 258.49)",
+          "oklch(72.14% 0.0614 258.49)",
+          "oklch(83.57% 0.0395 258.49)",
+          "oklch(95.00% 0.0125 258.49)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Marino de interacción",
+        "tonalRamp": [
+          "oklch(15.00% 0.0363 255.19)",
+          "oklch(26.43% 0.0591 255.19)",
+          "oklch(37.86% 0.0743 255.19)",
+          "oklch(49.29% 0.0800 255.19)",
+          "oklch(60.71% 0.0755 255.19)",
+          "oklch(72.14% 0.0614 255.19)",
+          "oklch(83.57% 0.0395 255.19)",
+          "oklch(95.00% 0.0125 255.19)"
+        ]
+      },
+      "on-primary": {
+        "role": "neutral",
+        "displayName": "Texto sobre marino",
+        "tonalRamp": [
+          "oklch(15.00% 0.0000 89.88)",
+          "oklch(26.43% 0.0000 89.88)",
+          "oklch(37.86% 0.0000 89.88)",
+          "oklch(49.29% 0.0000 89.88)",
+          "oklch(60.71% 0.0000 89.88)",
+          "oklch(72.14% 0.0000 89.88)",
+          "oklch(83.57% 0.0000 89.88)",
+          "oklch(95.00% 0.0000 89.88)"
+        ]
+      },
+      "secondary": {
+        "role": "primary",
+        "displayName": "Azul suave",
+        "tonalRamp": [
+          "oklch(15.00% 0.0083 250.59)",
+          "oklch(26.43% 0.0135 250.59)",
+          "oklch(37.86% 0.0170 250.59)",
+          "oklch(49.29% 0.0183 250.59)",
+          "oklch(60.71% 0.0173 250.59)",
+          "oklch(72.14% 0.0141 250.59)",
+          "oklch(83.57% 0.0090 250.59)",
+          "oklch(95.00% 0.0029 250.59)"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Naranja cálido",
+        "tonalRamp": [
+          "oklch(15.00% 0.0363 54.38)",
+          "oklch(26.43% 0.0591 54.38)",
+          "oklch(37.86% 0.0743 54.38)",
+          "oklch(49.29% 0.0800 54.38)",
+          "oklch(60.71% 0.0755 54.38)",
+          "oklch(72.14% 0.0614 54.38)",
+          "oklch(83.57% 0.0395 54.38)",
+          "oklch(95.00% 0.0125 54.38)"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Fondo gris azulado",
+        "tonalRamp": [
+          "oklch(15.00% 0.0028 255.47)",
+          "oklch(26.43% 0.0046 255.47)",
+          "oklch(37.86% 0.0058 255.47)",
+          "oklch(49.29% 0.0062 255.47)",
+          "oklch(60.71% 0.0059 255.47)",
+          "oklch(72.14% 0.0048 255.47)",
+          "oklch(83.57% 0.0031 255.47)",
+          "oklch(95.00% 0.0010 255.47)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Superficie blanca",
+        "tonalRamp": [
+          "oklch(15.00% 0.0000 89.88)",
+          "oklch(26.43% 0.0000 89.88)",
+          "oklch(37.86% 0.0000 89.88)",
+          "oklch(49.29% 0.0000 89.88)",
+          "oklch(60.71% 0.0000 89.88)",
+          "oklch(72.14% 0.0000 89.88)",
+          "oklch(83.57% 0.0000 89.88)",
+          "oklch(95.00% 0.0000 89.88)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Tinta azul",
+        "tonalRamp": [
+          "oklch(15.00% 0.0320 260.73)",
+          "oklch(26.43% 0.0520 260.73)",
+          "oklch(37.86% 0.0654 260.73)",
+          "oklch(49.29% 0.0704 260.73)",
+          "oklch(60.71% 0.0665 260.73)",
+          "oklch(72.14% 0.0541 260.73)",
+          "oklch(83.57% 0.0348 260.73)",
+          "oklch(95.00% 0.0110 260.73)"
+        ]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Texto azul atenuado",
+        "tonalRamp": [
+          "oklch(15.00% 0.0209 256.66)",
+          "oklch(26.43% 0.0339 256.66)",
+          "oklch(37.86% 0.0426 256.66)",
+          "oklch(49.29% 0.0459 256.66)",
+          "oklch(60.71% 0.0434 256.66)",
+          "oklch(72.14% 0.0353 256.66)",
+          "oklch(83.57% 0.0227 256.66)",
+          "oklch(95.00% 0.0072 256.66)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Separador suave",
+        "tonalRamp": [
+          "oklch(15.00% 0.0076 250.85)",
+          "oklch(26.43% 0.0123 250.85)",
+          "oklch(37.86% 0.0155 250.85)",
+          "oklch(49.29% 0.0167 250.85)",
+          "oklch(60.71% 0.0158 250.85)",
+          "oklch(72.14% 0.0128 250.85)",
+          "oklch(83.57% 0.0083 250.85)",
+          "oklch(95.00% 0.0026 250.85)"
+        ]
+      },
+      "control-border": {
+        "role": "neutral",
+        "displayName": "Borde de control",
+        "tonalRamp": [
+          "oklch(15.00% 0.0178 253.56)",
+          "oklch(26.43% 0.0289 253.56)",
+          "oklch(37.86% 0.0363 253.56)",
+          "oklch(49.29% 0.0391 253.56)",
+          "oklch(60.71% 0.0370 253.56)",
+          "oklch(72.14% 0.0301 253.56)",
+          "oklch(83.57% 0.0193 253.56)",
+          "oklch(95.00% 0.0061 253.56)"
+        ]
+      },
+      "focus": {
+        "role": "neutral",
+        "displayName": "Petróleo de foco",
+        "tonalRamp": [
+          "oklch(15.00% 0.0363 215.01)",
+          "oklch(26.43% 0.0591 215.01)",
+          "oklch(37.86% 0.0743 215.01)",
+          "oklch(49.29% 0.0800 215.01)",
+          "oklch(60.71% 0.0755 215.01)",
+          "oklch(72.14% 0.0614 215.01)",
+          "oklch(83.57% 0.0395 215.01)",
+          "oklch(95.00% 0.0125 215.01)"
+        ]
+      },
+      "info-surface": {
+        "role": "neutral",
+        "displayName": "Fondo informativo",
+        "tonalRamp": [
+          "oklch(15.00% 0.0074 221.08)",
+          "oklch(26.43% 0.0120 221.08)",
+          "oklch(37.86% 0.0151 221.08)",
+          "oklch(49.29% 0.0163 221.08)",
+          "oklch(60.71% 0.0154 221.08)",
+          "oklch(72.14% 0.0125 221.08)",
+          "oklch(83.57% 0.0081 221.08)",
+          "oklch(95.00% 0.0026 221.08)"
+        ]
+      },
+      "info-border": {
+        "role": "neutral",
+        "displayName": "Borde informativo",
+        "tonalRamp": [
+          "oklch(15.00% 0.0139 217.49)",
+          "oklch(26.43% 0.0226 217.49)",
+          "oklch(37.86% 0.0284 217.49)",
+          "oklch(49.29% 0.0306 217.49)",
+          "oklch(60.71% 0.0289 217.49)",
+          "oklch(72.14% 0.0235 217.49)",
+          "oklch(83.57% 0.0151 217.49)",
+          "oklch(95.00% 0.0048 217.49)"
+        ]
+      },
+      "info-text": {
+        "role": "neutral",
+        "displayName": "Texto informativo",
+        "tonalRamp": [
+          "oklch(15.00% 0.0290 215.08)",
+          "oklch(26.43% 0.0471 215.08)",
+          "oklch(37.86% 0.0592 215.08)",
+          "oklch(49.29% 0.0638 215.08)",
+          "oklch(60.71% 0.0602 215.08)",
+          "oklch(72.14% 0.0490 215.08)",
+          "oklch(83.57% 0.0315 215.08)",
+          "oklch(95.00% 0.0100 215.08)"
+        ]
+      },
+      "success-surface": {
+        "role": "neutral",
+        "displayName": "Fondo de éxito",
+        "tonalRamp": [
+          "oklch(15.00% 0.0083 155.81)",
+          "oklch(26.43% 0.0134 155.81)",
+          "oklch(37.86% 0.0169 155.81)",
+          "oklch(49.29% 0.0182 155.81)",
+          "oklch(60.71% 0.0172 155.81)",
+          "oklch(72.14% 0.0140 155.81)",
+          "oklch(83.57% 0.0090 155.81)",
+          "oklch(95.00% 0.0028 155.81)"
+        ]
+      },
+      "success-text": {
+        "role": "neutral",
+        "displayName": "Texto de éxito",
+        "tonalRamp": [
+          "oklch(15.00% 0.0318 161.19)",
+          "oklch(26.43% 0.0516 161.19)",
+          "oklch(37.86% 0.0649 161.19)",
+          "oklch(49.29% 0.0699 161.19)",
+          "oklch(60.71% 0.0660 161.19)",
+          "oklch(72.14% 0.0537 161.19)",
+          "oklch(83.57% 0.0345 161.19)",
+          "oklch(95.00% 0.0109 161.19)"
+        ]
+      },
+      "warning-surface": {
+        "role": "neutral",
+        "displayName": "Fondo de aviso",
+        "tonalRamp": [
+          "oklch(15.00% 0.0126 81.48)",
+          "oklch(26.43% 0.0204 81.48)",
+          "oklch(37.86% 0.0257 81.48)",
+          "oklch(49.29% 0.0276 81.48)",
+          "oklch(60.71% 0.0261 81.48)",
+          "oklch(72.14% 0.0212 81.48)",
+          "oklch(83.57% 0.0136 81.48)",
+          "oklch(95.00% 0.0043 81.48)"
+        ]
+      },
+      "warning-text": {
+        "role": "neutral",
+        "displayName": "Texto de aviso",
+        "tonalRamp": [
+          "oklch(15.00% 0.0363 59.09)",
+          "oklch(26.43% 0.0591 59.09)",
+          "oklch(37.86% 0.0743 59.09)",
+          "oklch(49.29% 0.0800 59.09)",
+          "oklch(60.71% 0.0755 59.09)",
+          "oklch(72.14% 0.0614 59.09)",
+          "oklch(83.57% 0.0395 59.09)",
+          "oklch(95.00% 0.0125 59.09)"
+        ]
+      },
+      "error-surface": {
+        "role": "neutral",
+        "displayName": "Fondo de error",
+        "tonalRamp": [
+          "oklch(15.00% 0.0086 29.55)",
+          "oklch(26.43% 0.0140 29.55)",
+          "oklch(37.86% 0.0176 29.55)",
+          "oklch(49.29% 0.0190 29.55)",
+          "oklch(60.71% 0.0179 29.55)",
+          "oklch(72.14% 0.0146 29.55)",
+          "oklch(83.57% 0.0094 29.55)",
+          "oklch(95.00% 0.0030 29.55)"
+        ]
+      },
+      "error-text": {
+        "role": "neutral",
+        "displayName": "Texto de error",
+        "tonalRamp": [
+          "oklch(15.00% 0.0363 29.38)",
+          "oklch(26.43% 0.0591 29.38)",
+          "oklch(37.86% 0.0743 29.38)",
+          "oklch(49.29% 0.0800 29.38)",
+          "oklch(60.71% 0.0755 29.38)",
+          "oklch(72.14% 0.0614 29.38)",
+          "oklch(83.57% 0.0395 29.38)",
+          "oklch(95.00% 0.0125 29.38)"
+        ]
+      },
+      "skeleton": {
+        "role": "neutral",
+        "displayName": "Bloque de carga",
+        "tonalRamp": [
+          "oklch(15.00% 0.0083 250.59)",
+          "oklch(26.43% 0.0135 250.59)",
+          "oklch(37.86% 0.0170 250.59)",
+          "oklch(49.29% 0.0183 250.59)",
+          "oklch(60.71% 0.0173 250.59)",
+          "oklch(72.14% 0.0141 250.59)",
+          "oklch(83.57% 0.0090 250.59)",
+          "oklch(95.00% 0.0029 250.59)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Título de página",
+        "purpose": "Panel y registro; la portada y la entrada emitida conservan variaciones locales documentadas."
+      },
+      "headline": {
+        "displayName": "Título de sección",
+        "purpose": "Secciones y títulos de tarjetas públicas."
+      },
+      "title": {
+        "displayName": "Título operativo",
+        "purpose": "Tarjetas del organizador y subtítulos."
+      },
+      "body": {
+        "displayName": "Lectura",
+        "purpose": "Texto y campos."
+      },
+      "action": {
+        "displayName": "Acción",
+        "purpose": "Texto fuerte de botones."
+      },
+      "label": {
+        "displayName": "Etiqueta",
+        "purpose": "Nombres de campos."
+      },
+      "small": {
+        "displayName": "Nota",
+        "purpose": "Información secundaria."
+      },
+      "caption": {
+        "displayName": "Ayuda",
+        "purpose": "Ayudas; antetítulos y badges emplean este tamaño con peso fuerte."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-card",
+        "value": "0 12px 40px #10244708",
+        "purpose": "Sombra ambiental secundaria de tarjetas y paneles, sin elevación al pasar el puntero."
+      }
+    ],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "shared-columns",
+        "value": "800px"
+      },
+      {
+        "name": "legacy-composition-max",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón primary",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Receta primary implementada en panel y estilos compartidos; sin transición ni transformación de pulsación.",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">Confirmar registro</button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:var(--control-min-height);padding:var(--space-3) var(--space-5);border:var(--border-width) solid transparent;border-radius:var(--radius-control);font-family:var(--font-body);font-size:var(--text-body);font-weight:var(--weight-strong);line-height:var(--leading-body);text-align:center;text-decoration:none;cursor:pointer;background:var(--color-primary);color:var(--color-on-primary)}.ds-button-primary:hover{background:var(--color-primary-hover)}.ds-button-primary:focus-visible{outline:var(--focus-width) solid var(--color-focus);outline-offset:var(--focus-offset)}.ds-button-primary:disabled{opacity:var(--opacity-disabled);cursor:default}"
+    },
+    {
+      "name": "Botón secondary",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Receta secondary implementada en panel y estilos compartidos; sin transición ni transformación de pulsación.",
+      "html": "<button class=\"ds-button-secondary\" type=\"button\">Ver evento</button>",
+      "css": ".ds-button-secondary{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:var(--control-min-height);padding:var(--space-3) var(--space-5);border:var(--border-width) solid transparent;border-radius:var(--radius-control);font-family:var(--font-body);font-size:var(--text-body);font-weight:var(--weight-strong);line-height:var(--leading-body);text-align:center;text-decoration:none;cursor:pointer;background:var(--color-secondary);color:var(--color-primary)}.ds-button-secondary:hover{background:var(--color-secondary)}.ds-button-secondary:focus-visible{outline:var(--focus-width) solid var(--color-focus);outline-offset:var(--focus-offset)}.ds-button-secondary:disabled{opacity:var(--opacity-disabled);cursor:default}"
+    },
+    {
+      "name": "Botón text",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "Receta text implementada en panel y estilos compartidos; sin transición ni transformación de pulsación.",
+      "html": "<button class=\"ds-button-text\" type=\"button\">Editar</button>",
+      "css": ".ds-button-text{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:var(--control-min-height);padding:var(--space-3) var(--space-5);border:var(--border-width) solid transparent;border-radius:var(--radius-control);font-family:var(--font-body);font-size:var(--text-body);font-weight:var(--weight-strong);line-height:var(--leading-body);text-align:center;text-decoration:none;cursor:pointer;background:transparent;color:var(--color-primary)}.ds-button-text:hover{background:var(--color-secondary)}.ds-button-text:focus-visible{outline:var(--focus-width) solid var(--color-focus);outline-offset:var(--focus-offset)}.ds-button-text:disabled{opacity:var(--opacity-disabled);cursor:default}"
+    },
+    {
+      "name": "Botón danger",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Receta danger implementada en panel y estilos compartidos; sin transición ni transformación de pulsación.",
+      "html": "<button class=\"ds-button-danger\" type=\"button\">Eliminar</button>",
+      "css": ".ds-button-danger{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:var(--control-min-height);padding:var(--space-3) var(--space-5);border:var(--border-width) solid transparent;border-radius:var(--radius-control);font-family:var(--font-body);font-size:var(--text-body);font-weight:var(--weight-strong);line-height:var(--leading-body);text-align:center;text-decoration:none;cursor:pointer;background:var(--color-error-surface);color:var(--color-error-text)}.ds-button-danger:hover{border-color:var(--color-error-text)}.ds-button-danger:focus-visible{outline:var(--focus-width) solid var(--color-focus);outline-offset:var(--focus-offset)}.ds-button-danger:disabled{opacity:var(--opacity-disabled);cursor:default}"
+    },
+    {
+      "name": "Campo de registro",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Etiqueta visible, borde de control, foco y mensaje de error asociado. El hover no cambia el campo en la receta original.",
+      "html": "<label class=\"ds-field\" for=\"ds-name\">Nombre completo<input class=\"ds-input\" id=\"ds-name\" name=\"name\" autocomplete=\"name\" aria-invalid=\"true\" aria-describedby=\"ds-name-error\" required><span class=\"ds-field-error\" id=\"ds-name-error\">Escribe tu nombre.</span></label>",
+      "css": ".ds-field{display:block;font-family:var(--font-body);font-size:var(--text-small);font-weight:var(--weight-strong);color:var(--color-text)}.ds-input{display:block;width:100%;min-width:0;min-height:var(--control-min-height);margin-top:var(--space-2);padding:var(--space-3);border:var(--border-width) solid var(--color-control-border);border-radius:var(--radius-control);background:var(--color-surface);color:var(--color-text);font-family:var(--font-body);font-size:var(--text-body);font-weight:var(--weight-regular)}.ds-input:focus-visible{outline:var(--focus-width) solid var(--color-focus);outline-offset:var(--focus-offset)}.ds-input[aria-invalid=true]{border-color:var(--color-error-text)}.ds-input:disabled{background:var(--color-canvas);cursor:default}.ds-field-error{display:block;margin-top:var(--space-2);font-size:var(--text-caption);font-weight:var(--weight-regular);color:var(--color-error-text)}"
+    },
+    {
+      "name": "Cabecera de registro",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Marca y texto de contexto con separación inferior. La marca conserva su color al pasar el puntero.",
+      "html": "<header class=\"ds-header\"><a class=\"ds-brand\" href=\"/\" aria-label=\"Door List, ir al inicio\">door list<span class=\"ds-brand-dot\">.</span></a><span class=\"ds-header-note\">Registro al evento</span></header>",
+      "css": ".ds-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-6) 0;border-bottom:var(--border-width) solid var(--color-border);color:var(--color-text);font-family:var(--font-body);line-height:var(--leading-body)}.ds-brand{color:inherit;text-decoration:none;font-family:var(--font-body);font-size:var(--text-section-title);font-weight:var(--weight-strong);letter-spacing:var(--tracking-heading)}.ds-brand:focus-visible{outline:var(--focus-width) solid var(--color-focus);outline-offset:var(--focus-offset)}.ds-brand-dot{color:var(--color-accent)}.ds-header-note{color:var(--color-text-muted);font-size:var(--text-small)}"
+    },
+    {
+      "name": "Estados de evento",
+      "kind": "chip",
+      "refersTo": "status-published",
+      "description": "Publicado y borrador: etiquetas informativas sin interacción ni estados hover/foco.",
+      "html": "<span class=\"ds-status ds-published\">Publicado</span> <span class=\"ds-status ds-draft\">Borrador</span>",
+      "css": ".ds-status{display:inline-block;padding:var(--space-1) var(--space-2);border-radius:var(--radius-pill);font-family:var(--font-body);font-size:var(--text-caption);font-weight:var(--weight-strong);line-height:var(--leading-body)}.ds-published{color:var(--color-success-text);background:var(--color-success-surface)}.ds-draft{color:var(--color-warning-text);background:var(--color-warning-surface)}"
+    },
+    {
+      "name": "Tarjeta de evento del organizador",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Contenedor del patrón existente; el texto entre corchetes representa datos del evento, sin inventar un evento real. La selección se muestra con borde y outline.",
+      "html": "<article class=\"ds-card ds-selected\" aria-labelledby=\"ds-event-title\"><h3 class=\"ds-card-title\" id=\"ds-event-title\">[Título del evento]</h3><p class=\"ds-card-meta\">[Lugar del evento]</p></article>",
+      "css": ".ds-card{display:flex;flex-direction:column;gap:var(--space-4);min-width:0;padding:var(--space-6);background:var(--color-surface);color:var(--color-text);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);font-family:var(--font-body);line-height:var(--leading-body)}.ds-selected{border-color:var(--color-focus);outline:var(--border-width) solid var(--color-focus)}.ds-card-title{margin:0;overflow-wrap:anywhere;font-family:var(--font-body);font-size:var(--text-card-title);font-weight:var(--weight-strong);line-height:var(--leading-heading)}.ds-card-meta{margin:0;overflow-wrap:anywhere;color:var(--color-text-muted);font-size:var(--text-small)}"
+    },
+    {
+      "name": "Mosaico de fecha",
+      "kind": "custom",
+      "refersTo": "date-tile",
+      "description": "Geometría del mosaico del organizador; DD y MES son marcadores de fecha, no datos de un evento.",
+      "html": "<div class=\"ds-date\" aria-hidden=\"true\"><strong>DD</strong><span>MES</span></div>",
+      "css": ".ds-date{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:calc(var(--space-8)*2);min-height:calc(var(--space-8)*2);padding:var(--space-2);border-radius:var(--radius-control);background:var(--color-secondary);color:var(--color-primary);font-family:var(--font-body);line-height:var(--leading-body)}.ds-date strong{font-family:var(--font-heading);font-size:var(--text-section-title);line-height:var(--leading-heading);font-weight:var(--weight-regular)}.ds-date span{font-size:var(--text-caption)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Un lugar para encontrarnos",
+    "overview": "Door List se describe como cercano, claro y ordenado. Los títulos con serif aportan personalidad; el texto y los controles sin serif facilitan leer y completar tareas. El azul marino profundo sostiene la identidad y el naranja cálido aparece como detalle decorativo.\n\nLa profundidad es casi plana: predominan los fondos claros y los bordes, con una sombra secundaria en tarjetas y paneles. Los componentes son claros y cercanos, con formas suaves y acciones fáciles de reconocer. Estas descripciones fueron confirmadas por el usuario; no constituyen un rediseño.\n\n**Key Characteristics:",
+    "keyCharacteristics": [
+      "Títulos expresivos con Fraunces y controles legibles con DM Sans.",
+      "Azul marino profundo, superficies claras y naranja cálido decorativo.",
+      "Jerarquía por espacio, tipografía, fondos y bordes; sombra secundaria.",
+      "Componentes claros y cercanos, con esquinas suaves y estados explícitos."
+    ],
+    "rules": [
+      {
+        "name": "The Decorative Orange Rule",
+        "body": "Reservar el naranja para decoración; no usarlo como texto pequeño ni como indicador de éxito, error o selección.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Families Rule",
+        "body": "Reutilizar Fraunces para títulos y DM Sans para lectura y controles, sin añadir familias por pantalla.",
+        "section": "typography"
+      },
+      {
+        "name": "The Secondary Shadow Rule",
+        "body": "Mantener la sombra como separación secundaria; la jerarquía principal corresponde a fondos, bordes y tipografía.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** consumir los tokens de `app/ui-tokens.css` y las recetas de `door-list-ui` para nuevas pantallas.",
+      "**Do** mantener títulos Fraunces y lectura y controles DM Sans con roles de jerarquía explícitos.",
+      "**Do** conservar el foco visible y acompañar estados, errores y disponibilidad con texto.",
+      "**Do** permitir wrap de acciones y datos largos y mantener la lectura en una columna en móvil.",
+      "**Do** distinguir el estado de carga del vacío confirmado y del error."
+    ],
+    "donts": [
+      "**Don't** usar el naranja decorativo como texto pequeño o indicador de estado o selección.",
+      "**Don't** convertir valores locales de CSS legado en nuevas variantes del sistema compartido.",
+      "**Don't** añadir familias tipográficas, bibliotecas de iconos o animación de skeleton por pantalla.",
+      "**Don't** convertir nombres de patrones conceptuales en afirmaciones de componentes exportados que no existen.",
+      "**Don't** sustituir la jerarquía de fondos, bordes y tipografía por sombras protagonistas."
+    ]
+  }
+}

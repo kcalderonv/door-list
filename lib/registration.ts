@@ -13,6 +13,10 @@ export type PublicEvent = {
   ticketTypes: PublicTicketType[];
 };
 
+export function hasAvailableTickets(event: PublicEvent | null): event is PublicEvent {
+  return !!event && event.remaining > 0 && event.ticketTypes.some(ticket => ticket.remaining > 0);
+}
+
 export type RegistrationFields = { ticketTypeId: string; name: string; email: string };
 export type FieldErrors = Partial<Record<keyof RegistrationFields, string>>;
 export type RegistrationStatus = "idle" | "validation_error" | "unavailable" | "sold_out" | "duplicate" | "error" | "success";

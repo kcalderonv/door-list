@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { initialRegistrationState, type PublicEvent, type RegistrationState } from "@/lib/registration";
+import { hasAvailableTickets, initialRegistrationState, type PublicEvent, type RegistrationState } from "@/lib/registration";
 import { registerForEvent } from "@/lib/registration-client";
 import { ticketPath } from "@/lib/tickets";
 
@@ -21,7 +21,7 @@ export default function RegistrationForm({ event: initialEvent }: { event: Publi
   const form = useRef<HTMLFormElement>(null);
   const event = state.event === undefined ? initialEvent : state.event;
   const tickets = event?.ticketTypes ?? [];
-  const available = !!event && event.remaining > 0 && tickets.some(ticket => ticket.remaining > 0);
+  const available = hasAvailableTickets(event);
   const selection = tickets.some(ticket => ticket.id === ticketId && ticket.remaining > 0) ? ticketId : "";
 
   useEffect(() => {

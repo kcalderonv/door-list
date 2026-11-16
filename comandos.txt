@@ -1,1 +1,7 @@
 codex --sandbox workspace-write --ask-for-approval on-request
+
+Analiza todo el cambio que se hizo en la rama feature/attendes-export. Organízalo en el dashboard y agrúpalos en commits por funcionalidad, no en un commit único. Propón primero la lista de commits con su mensaje y archivos que entran en cada uno. No ejecutes nada hasta que te lo confirme.
+
+confirmo realiza los commit
+
+Ahora, lo que quiero que hagamos es que nos cambiemos a `main`, hagamos el merge de esta rama actual a `main` para que quede limpio y después vamos a borrar la rama `features/attendees-export`.

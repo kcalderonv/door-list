@@ -5,7 +5,15 @@ registerHooks({ resolve(specifier, context, next) {
  if (specifier === "./dates" && context.parentURL?.endsWith("/lib/registration.ts")) return {url: new URL("../lib/dates.ts", import.meta.url).href, shortCircuit: true};
  return next(specifier, context);
 }});
-const { hasPublicRegistration, isUuid, limaDate, validateRegistration } = await import("../lib/registration.ts");
+const { hasAvailableTickets, hasPublicRegistration, isUuid, limaDate, validateRegistration } = await import("../lib/registration.ts");
+
+test("registration availability requires both event capacity and an available ticket type", () => {
+  assert.equal(hasAvailableTickets(null), false);
+  assert.equal(hasAvailableTickets({ remaining: 0, ticketTypes: [{ remaining: 2 }] }), false);
+  assert.equal(hasAvailableTickets({ remaining: 2, ticketTypes: [] }), false);
+  assert.equal(hasAvailableTickets({ remaining: 2, ticketTypes: [{ remaining: 0 }] }), false);
+  assert.equal(hasAvailableTickets({ remaining: 2, ticketTypes: [{ remaining: 0 }, { remaining: 1 }] }), true);
+});
 
 const ticketId = "8f9a1248-8cf1-4739-9d8a-e0d6a7847353";
 function fields(overrides = {}) {
