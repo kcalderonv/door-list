@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { isTicketCode, ticketPath, ticketStatuses } from "@/lib/tickets";
 import TicketQr from "./ticket-qr";
 import { getPublicTicket } from "@/lib/public-ticket";
+import CopyTicketLink from "./copy-ticket-link";
 import "./ticket.css";
 
 export default async function TicketPage({ params }: { params: Promise<{ code: string }> }) {
@@ -31,8 +32,11 @@ export default async function TicketPage({ params }: { params: Promise<{ code: s
       <div><dt>Fecha y hora</dt><dd>{formatEventDate(ticket.event.date)}<small>Hora de Lima</small></dd></div>
       <div><dt>Lugar</dt><dd>{ticket.event.venue}</dd></div>
     </dl>
-    <p className="registration-note">Este enlace es privado: quien lo tenga podrá ver tus datos y, si la entrada es válida, tu QR. Guárdalo y evita compartirlo.</p>
-    <a className="ticket-refresh" href={ticketPath(code)}>Actualizar estado</a>
+    <p className="registration-note">Este enlace es privado: quien lo tenga podrá ver tus datos y, si la entrada es válida, tu QR. Copia el enlace y guárdalo en un lugar privado. Evita compartirlo.</p>
+    <div className="ticket-actions">
+      <CopyTicketLink path={ticketPath(code)} />
+      <a className="ticket-refresh" href={ticketPath(code)}>Actualizar estado</a>
+    </div>
     <p className="registration-note">El estado se consulta al abrir o actualizar esta página. Escanear el QR no marca la entrada como utilizada.</p>
   </section>;
 }

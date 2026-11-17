@@ -48,6 +48,58 @@
   margin: var(--space-4) 0;
 }
 
+.public-issued-ticket .ticket-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3) var(--space-5);
+}
+
+.public-issued-ticket .ticket-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.public-issued-ticket .ticket-copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-min-height);
+  max-width: 100%;
+  padding: var(--space-3) var(--space-5);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--color-secondary);
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-strong);
+  line-height: var(--leading-body);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.public-issued-ticket .ticket-copy-button:hover {
+  background: var(--color-secondary);
+}
+
+.public-issued-ticket .ticket-copy-button:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+
+.public-issued-ticket .ticket-copy-result {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+  overflow-wrap: anywhere;
+}
+
+.public-issued-ticket .ticket-copy-result:empty {
+  margin: 0;
+}
+
 .public-issued-ticket .ticket-refresh {
   min-height: var(--control-min-height);
   color: var(--color-primary);
