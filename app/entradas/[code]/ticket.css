@@ -1,0 +1,57 @@
+.public-issued-ticket {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-block: var(--space-8);
+}
+
+.public-issued-ticket > p {
+  margin: 0;
+}
+
+.public-issued-ticket .status {
+  margin: 0;
+}
+
+.public-issued-ticket [data-ticket-state="valid"] {
+  color: var(--color-success-text);
+  background: var(--color-success-surface);
+}
+
+.public-issued-ticket [data-ticket-state="used"] {
+  color: var(--color-warning-text);
+  background: var(--color-warning-surface);
+}
+
+.public-issued-ticket [data-ticket-state="revoked"] {
+  color: var(--color-error-text);
+  background: var(--color-error-surface);
+}
+
+.public-issued-ticket .ticket-qr {
+  margin: var(--space-2) 0;
+  min-width: 0;
+}
+
+.public-issued-ticket .ticket-qr figcaption {
+  font-size: var(--text-small);
+  margin-bottom: var(--space-2);
+}
+
+.public-issued-ticket .ticket-qr code {
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}
+
+.public-issued-ticket > dl {
+  grid-template-columns: minmax(0, 1fr);
+  margin: var(--space-4) 0;
+}
+
+.public-issued-ticket .ticket-refresh {
+  min-height: var(--control-min-height);
+  color: var(--color-primary);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  text-underline-offset: var(--space-1);
+}
